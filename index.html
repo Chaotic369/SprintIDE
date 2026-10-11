@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Sprint IDE</title>
+<style>
+  :root {
+    --bg-dark: #0a0a0c;
+    --bg-panel: #111215;
+    --bg-header: #1c1d20;
+    --accent-blue: #5c9dff;
+    --accent-green: #39d353;
+    --accent-red: #f85149;
+    --text-main: #ffffff;
+    --text-muted: #8b949e;
+    --border: #30363d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  
+  /* Buttons */
+  button { background: #21262d; color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
+  button:hover:not(:disabled) { background: #30363d; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.primary { background: var(--accent-green); color: #000; border: none; }
+  button.primary:hover:not(:disabled) { background: #2ea043; }
+  button.danger { color: var(--accent-red); border-color: rgba(248,81,73,0.3); background: rgba(248,81,73,0.1); }
+  
+  /* Layout */
+  #login-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+  #app-layout { display: none; flex-direction: column; height: 100vh; }
+  
+  #header { height: 50px; background: var(--bg-header); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; justify-content: space-between; flex-shrink: 0; }
+  #header-controls { display: flex; gap: 10px; align-items: center; }
+  select { background: #0a0a0c; color: #fff; border: 1px solid var(--border); padding: 6px; border-radius: 6px; font-size: 12px; outline: none; }
+
+  #workspace { display: flex; flex: 1; min-height: 0; }
+  
+  /* Sidebar */
+  #sidebar { width: 220px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-header { padding: 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+  #file-tree { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .file-item { padding: 6px 16px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-muted); user-select: none; }
+  .file-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .file-item.active { background: rgba(92,157,255,0.15); color: var(--accent-blue); border-left: 3px solid var(--accent-blue); padding-left: 13px; }
+
+  /* Main Editor Area */
+  #main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+  #editor-tabs { height: 40px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 10px; gap: 10px; flex-shrink: 0; }
+  .tab-btn { background: transparent; border: none; padding: 8px 12px; color: var(--text-muted); border-radius: 0; border-bottom: 2px solid transparent; font-size: 13px; }
+  .tab-btn.active { color: #fff; border-bottom: 2px solid var(--accent-blue); }
+  
+  #view-container { flex: 1; position: relative; display: flex; min-height: 0; }
+  #code-editor { position: absolute; inset: 0; width: 100%; height: 100%; background: #0a0a0c; color: #e6edf3; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; padding: 16px; border: none; resize: none; outline: none; display: none; tab-size: 2; }
+  #preview-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: none; background: #fff; display: block; }
+  
+  /* Console */
+  #console-panel { height: 150px; background: #0d1117; border-top: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  #console-header { padding: 6px 12px; background: #161b22; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+  #console-logs { flex: 1; overflow-y: auto; padding: 8px 12px; font-family: monospace; font-size: 11px; line-height: 1.4; color: #e6edf3; }
+  .log-err { color: #ff7b72; margin-bottom: 4px; border-left: 2px solid #ff7b72; padding-left: 8px; background: rgba(255,123,114,0.1); padding: 4px 8px; border-radius: 4px; }
+  .log-info { color: var(--accent-blue); margin-bottom: 4px; }
+  .log-success { color: var(--accent-green); margin-bottom: 4px; }
+  
+  /* Overlays & Utilities */
+  #toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg-panel); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; transform: translateY(100px); opacity: 0; transition: 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  .watermark { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; color: rgba(255,255,255,0.1); pointer-events: none; text-align: center; line-height: 1.5; padding: 40px; }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="login-screen">
+  <h2>Vibe Sprint IDE</h2>
+  <p style="color: var(--text-muted); font-size: 14px;">Log in to authenticate your GitHub deployment pipeline.</p>
+  <button id="btn-login" class="primary" style="padding: 12px 24px; font-size: 14px;">Sign in with GitHub</button>
+</div>
+
+<!-- Main App Layout -->
+<div id="app-layout">
+  <div id="header">
+    <div id="header-controls">
+      <select id="repo-select" title="Select Repository"><option value="">Loading Repos...</option></select>
+      <button id="btn-new-repo">➕ New Sprint Repo</button>
+      <button id="btn-live-site" style="display:none;">🌐 View Live Site</button>
+    </div>
+    <div id="header-controls">
+      <span id="user-display" style="font-size: 12px; color: var(--text-muted); margin-right: 10px;"></span>
+      <button id="btn-push" class="primary" disabled>💾 Push to Live</button>
+      <button id="btn-logout" class="danger">Logout</button>
+    </div>
+  </div>
+
+  <div id="workspace">
+    <div id="sidebar">
+      <div class="sidebar-header">
+        <span>FILES</span>
+        <button id="btn-new-file" style="padding: 2px 6px; font-size: 10px;">+ File</button>
+      </div>
+      <div id="file-tree"></div>
+    </div>
+    
+    <div id="main-area">
+      <div id="editor-tabs">
+        <button id="tab-preview" class="tab-btn active">Preview UI</button>
+        <button id="tab-code" class="tab-btn">Code (Read-Only)</button>
+        <div style="flex:1;"></div>
+        <button id="btn-paste-ai" class="primary" style="background: var(--accent-blue); color:#fff; font-size: 11px;">⚡ Paste AI Fix</button>
+      </div>
+      
+      <div id="view-container">
+        <div id="empty-watermark" class="watermark">Generate your app with AI,<br>copy the code, and click 'Paste AI Fix'</div>
+        <textarea id="code-editor" spellcheck="false" readonly></textarea>
+        <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
+      </div>
+      
+      <div id="console-panel">
+        <div id="console-header">
+          <span>Terminal / Error Logs</span>
+          <button id="btn-copy-errors" style="padding: 2px 8px; font-size: 10px;">Copy Logs for AI</button>
+        </div>
+        <div id="console-logs"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase Modular SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithPopup, GithubAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCsN9OHN4SKKzMvaUnWPGUHK4VrJICL-Eo",
+    authDomain: "ghub-fcc39.firebaseapp.com",
+    projectId: "ghub-fcc39"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GithubAuthProvider();
+  provider.addScope('repo'); // Required to read/write repositories
+
+  // State
+  let ghToken = '';
+  let ghUser = '';
+  let currentRepo = '';
+  let currentFile = '';
+  let sourceContent = '';
+  let fileTree = [];
+
+  // DOM Elements
+  const ui = {
+    loginScreen: document.getElementById('login-screen'),
+    appLayout: document.getElementById('app-layout'),
+    btnLogin: document.getElementById('btn-login'),
+    btnLogout: document.getElementById('btn-logout'),
+    userDisplay: document.getElementById('user-display'),
+    repoSelect: document.getElementById('repo-select'),
+    btnNewRepo: document.getElementById('btn-new-repo'),
+    btnPush: document.getElementById('btn-push'),
+    btnPasteAi: document.getElementById('btn-paste-ai'),
+    btnLiveSite: document.getElementById('btn-live-site'),
+    btnNewFile: document.getElementById('btn-new-file'),
+    fileTree: document.getElementById('file-tree'),
+    tabPreview: document.getElementById('tab-preview'),
+    tabCode: document.getElementById('tab-code'),
+    codeEditor: document.getElementById('code-editor'),
+    previewFrame: document.getElementById('preview-frame'),
+    watermark: document.getElementById('empty-watermark'),
+    consoleLogs: document.getElementById('console-logs'),
+    btnCopyErrors: document.getElementById('btn-copy-errors'),
+    toast: document.getElementById('toast')
+  };
+
+  // Utilities
+  function showToast(msg, isError = false) {
+    ui.toast.textContent = msg;
+    ui.toast.style.borderColor = isError ? 'var(--accent-red)' : 'var(--border)';
+    ui.toast.classList.add('show');
+    setTimeout(() => ui.toast.classList.remove('show'), 3000);
+  }
+
+  function log(msg, type = 'info') {
+    const el = document.createElement('div');
+    el.className = `log-${type}`;
+    el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    ui.consoleLogs.appendChild(el);
+    ui.consoleLogs.scrollTop = ui.consoleLogs.scrollHeight;
+  }
+
+  function unicodeToBase64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  function base64ToUnicode(b64) {
+    return decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
+  }
+
+  // Auth Flow
+  ui.btnLogin.addEventListener('click', () => {
+    signInWithPopup(auth, provider).then((result) => {
+      const credential = GithubAuthProvider.credentialFromResult(result);
+      ghToken = credential.accessToken;
+      ghUser = result.user.reloadUserInfo.screenName;
+      initIDE();
+    }).catch(err => {
+      showToast("Login failed: " + err.message, true);
+    });
+  });
+
+  ui.btnLogout.addEventListener('click', () => {
+    signOut(auth).then(() => {
+      window.location.reload();
+    });
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+       // Since Firebase doesn't persist the GitHub token across page reloads by default,
+       // we force a re-login if the page refreshes during the sprint. 
+       // For a 2.5 hour sprint, keeping it in memory is safest.
+       if (!ghToken) {
+           ui.loginScreen.style.display = 'flex';
+           ui.appLayout.style.display = 'none';
+       }
+    }
+  });
+
+  // IDE Init
+  async function initIDE() {
+    ui.loginScreen.style.display = 'none';
+    ui.appLayout.style.display = 'flex';
+    ui.userDisplay.textContent = `@${ghUser}`;
+    await fetchRepos();
+  }
+
+  // GitHub API Interactions
+  async function fetchRepos() {
+    try {
+      log('Fetching repositories...');
+      const res = await fetch('https://api.github.com/user/repos?sort=updated&per_page=50', {
+        headers: { Authorization: `token ${ghToken}` }
+      });
+      if (!res.ok) throw new Error("Failed to fetch repos");
+      const repos = await res.json();
+      
+      ui.repoSelect.innerHTML = '<option value="">-- Select Repo --</option>';
+      repos.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.full_name;
+        opt.textContent = r.name;
+        ui.repoSelect.appendChild(opt);
+      });
+
+      if(repos.length > 0) {
+        ui.repoSelect.value = repos[0].full_name;
+        await loadRepo(repos[0].full_name);
+      }
+    } catch (err) {
+      log(err.message, 'err');
+    }
+  }
+
+  ui.repoSelect.addEventListener('change', async (e) => {
+    if (e.target.value) await loadRepo(e.target.value);
+  });
+
+  async function loadRepo(repoFullName) {
+    currentRepo = repoFullName;
+    currentFile = '';
+    sourceContent = '';
+    ui.codeEditor.value = '';
+    renderPreview('');
+    ui.btnLiveSite.style.display = 'block';
+    
+    try {
+      log(`Loading tree for ${repoFullName}...`);
+      const res = await fetch(`https://api.github.com/repos/${currentRepo}/git/trees/main?recursive=1`, {
+        headers: { Authorization: `token ${ghToken}` }
+      });
+      if (!res.ok) throw new Error("Tree fetch failed (branch might not be 'main')");
+      const data = await res.json();
+      fileTree = data.tree.filter(t => t.type === 'blob');
+      renderFileTree();
+      
+      // Auto-load index.html if it exists
+      const indexFile = fileTree.find(f => f.path === 'index.html');
+      if (indexFile) await loadFile('index.html');
+      
+    } catch (err) {
+      log(err.message, 'err');
+      ui.fileTree.innerHTML = '<div style="padding:10px; color:#ff7b72;">Failed to load tree.</div>';
+    }
+  }
+
+  function renderFileTree() {
+    ui.fileTree.innerHTML = '';
+    fileTree.forEach(f => {
+      const div = document.createElement('div');
+      div.className = `file-item ${f.path === currentFile ? 'active' : ''}`;
+      div.textContent = `📄 ${f.path}`;
+      div.onclick = () => loadFile(f.path);
+      ui.fileTree.appendChild(div);
+    });
+  }
+
+  async function loadFile(path) {
+    if(!currentRepo) return;
+    try {
+      log(`Fetching ${path}...`);
+      const res = await fetch(`https://api.github.com/repos/${currentRepo}/contents/${path}?ref=main`, {
+        headers: { Authorization: `token ${ghToken}` }
+      });
+      if (!res.ok) throw new Error(`Could not load ${path}`);
+      const data = await res.json();
+      
+      sourceContent = base64ToUnicode(data.content);
+      currentFile = path;
+      ui.codeEditor.value = sourceContent;
+      ui.btnPush.disabled = false;
+      
+      renderFileTree();
+      renderPreview(sourceContent);
+      log(`Loaded ${path}`, 'success');
+    } catch (err) {
+      log(err.message, 'err');
+    }
+  }
+
+  // Quick Repo Creation
+  ui.btnNewRepo.addEventListener('click', async () => {
+    const repoName = prompt("Enter new repository name (e.g., sprint-app-1):");
+    if (!repoName) return;
+    
+    try {
+      log(`Creating repository: ${repoName}...`);
+      const res = await fetch('https://api.github.com/user/repos', {
+        method: 'POST',
+        headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: repoName, private: false, auto_init: true })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const repoData = await res.json();
+      
+      log('Committing base index.html...');
+      const baseContent = unicodeToBase64("<!DOCTYPE html>\n<html>\n<head>\n<title>Vibe App</title>\n</head>\n<body>\n  <h1>Hello Vibe!</h1>\n</body>\n</html>");
+      await fetch(`https://api.github.com/repos/${repoData.full_name}/contents/index.html`, {
+        method: 'PUT',
+        headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: "Initial commit", content: baseContent, branch: "main" })
+      });
+
+      log('Enabling GitHub Pages...');
+      await fetch(`https://api.github.com/repos/${repoData.full_name}/pages`, {
+        method: 'POST',
+        headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: { branch: 'main', path: '/' } })
+      });
+
+      showToast("Repository created successfully!");
+      await fetchRepos();
+      ui.repoSelect.value = repoData.full_name;
+      await loadRepo(repoData.full_name);
+
+    } catch (err) {
+      log("Repo creation failed: " + err.message, 'err');
+      showToast("Error creating repo", true);
+    }
+  });
+
+  // Push to Live (Commit)
+  ui.btnPush.addEventListener('click', async () => {
+    if (!currentRepo || !currentFile) return;
+    ui.btnPush.disabled = true;
+    ui.btnPush.textContent = "⏳ Pushing...";
+    
+    try {
+      // Get SHA of current file
+      const getRes = await fetch(`https://api.github.com/repos/${currentRepo}/contents/${currentFile}?ref=main`, {
+        headers: { Authorization: `token ${ghToken}` }
+      });
+      const getData = await getRes.json();
+      const sha = getData.sha;
+
+      // Put new content
+      const putRes = await fetch(`https://api.github.com/repos/${currentRepo}/contents/${currentFile}`, {
+        method: 'PUT',
+        headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Update ${currentFile} via Vibe Sprint`,
+          content: unicodeToBase64(sourceContent),
+          sha: sha,
+          branch: 'main'
+        })
+      });
+
+      if (!putRes.ok) throw new Error(await putRes.text());
+      
+      log(`Committed ${currentFile} to main.`, 'success');
+      showToast("Code pushed! Site will update in ~30s.");
+    } catch (err) {
+      log("Push failed: " + err.message, 'err');
+      showToast("Failed to push", true);
+    } finally {
+      ui.btnPush.disabled = false;
+      ui.btnPush.textContent = "💾 Push to Live";
+    }
+  });
+
+  ui.btnLiveSite.addEventListener('click', () => {
+    if(!currentRepo) return;
+    const repoName = currentRepo.split('/')[1];
+    window.open(`https://${ghUser}.github.io/${repoName}/`, '_blank');
+  });
+
+  // View Toggles
+  ui.tabPreview.addEventListener('click', () => {
+    ui.tabPreview.classList.add('active');
+    ui.tabCode.classList.remove('active');
+    ui.previewFrame.style.display = 'block';
+    ui.codeEditor.style.display = 'none';
+  });
+
+  ui.tabCode.addEventListener('click', () => {
+    ui.tabCode.classList.add('active');
+    ui.tabPreview.classList.remove('active');
+    ui.codeEditor.style.display = 'block';
+    ui.previewFrame.style.display = 'none';
+    ui.codeEditor.value = sourceContent;
+  });
+
+  // Iframe Error Interception Bridge
+  const bridgeScript = `
+    <script>
+      window.onerror = function(msg, url, line, col, error) {
+        window.parent.postMessage({ type: 'vibe_error', msg: 'Line ' + line + ': ' + msg }, '*');
+        return true;
+      };
+      window.addEventListener("unhandledrejection", function(e) {
+        window.parent.postMessage({ type: 'vibe_error', msg: 'Promise Error: ' + (e.reason && e.reason.message ? e.reason.message : 'Unknown') }, '*');
+      });
+    <\/script>
+  `;
+
+  function renderPreview(code) {
+    ui.watermark.style.display = code ? 'none' : 'flex';
+    if (!code) {
+      ui.previewFrame.srcdoc = '';
+      return;
+    }
+    const safeHtml = code.replace(/(<head[^>]*>)/i, `$1\n${bridgeScript}`);
+    // Fallback if no head tag exists
+    ui.previewFrame.srcdoc = safeHtml.includes('<head') ? safeHtml : bridgeScript + safeHtml;
+  }
+
+  // Catch errors from iframe
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'vibe_error') {
+      log(`Runtime Error: ${e.data.msg}`, 'err');
+    }
+  });
+
+  ui.btnCopyErrors.addEventListener('click', () => {
+    const errors = Array.from(document.querySelectorAll('.log-err')).map(el => el.textContent).join('\\n');
+    if (!errors) {
+      showToast("No errors to copy!");
+      return;
+    }
+    navigator.clipboard.writeText(`I am getting these console errors:\\n${errors}\\n\\nPlease fix the code.`).then(() => {
+      showToast("Copied prompt for AI!");
+    });
+  });
+
+  /* =========================================================================
+     THE VIBE PASTE ENGINE (Atomic Block Parser)
+     ========================================================================= */
+  
+  function fixEncoding(src) {
+    if (!src) return '';
+    return src.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+  }
+
+  function parseBlocks(rawText) {
+    // Normalise tokens
+    let cleaned = rawText
+      .replace(/={2,4}\s*SPLIT\s*={2,4}/gi, '===SPLIT===')
+      .replace(/={2,4}\s*BLOCK\s*={2,4}/gi, '===BLOCK===')
+      .replace(/^[ \t]*```[a-zA-Z0-9_\-]*\r?\n/gm, '')
+      .replace(/^[ \t]*```[ \t]*(\r?\n|$)/gm, '');
+
+    const units = cleaned.split('===BLOCK===').map(u => u.trim()).filter(Boolean);
+    const blocks = [];
+
+    units.forEach(u => {
+      if (!u.includes('===SPLIT===')) return;
+      const parts = u.split('===SPLIT===');
+      const oldCode = parts[0].trim();
+      const newCode = parts[1].trim();
+      if (oldCode || newCode) blocks.push({ oldCode, newCode });
+    });
+    return blocks;
+  }
+
+  function applyBlock(source, block) {
+    const cleanOld = block.oldCode.replace(/\r\n/g, '\n');
+    const cleanNew = fixEncoding(block.newCode.replace(/\r\n/g, '\n'));
+
+    // Exact Match Fallback finding
+    const idx = source.indexOf(cleanOld);
+    if (idx !== -1) {
+      return source.slice(0, idx) + cleanNew + source.slice(idx + cleanOld.length);
+    }
+
+    // Whitespace-agnostic fuzzy match (safe simple tier)
+    const escOld = cleanOld.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+    try {
+      const rx = new RegExp(escOld);
+      const match = source.match(rx);
+      if (match && match.index !== undefined) {
+        return source.slice(0, match.index) + cleanNew + source.slice(match.index + match[0].length);
+      }
+    } catch(e) {}
+
+    throw new Error(`Could not find the target code in the file. Ensure the AI output matches exactly.`);
+  }
+
+  async function handlePaste() {
+    if (!currentFile) {
+      showToast("Select a file first!", true);
+      return;
+    }
+    
+    let raw = "";
+    try {
+      raw = await navigator.clipboard.readText();
+    } catch (err) {
+      showToast("Clipboard permission denied. Press Ctrl+V instead.", true);
+      return;
+    }
+
+    if (!raw.trim()) return;
+
+    // Full file initialization bypass
+    if (!sourceContent && (raw.includes('<!DOCTYPE') || raw.includes('<html'))) {
+      sourceContent = fixEncoding(raw);
+      renderPreview(sourceContent);
+      ui.codeEditor.value = sourceContent;
+      ui.btnPush.disabled = false;
+      log('Initialised file from clipboard.', 'success');
+      showToast("Code pasted successfully!");
+      return;
+    }
+
+    // Block Processing
+    const blocks = parseBlocks(raw);
+    if (blocks.length === 0) {
+      log('No ===SPLIT=== blocks found. If pasting a full file, clear the editor first.', 'err');
+      showToast("Invalid AI Patch format", true);
+      return;
+    }
+
+    let stagingContent = sourceContent;
+    try {
+      blocks.forEach((b, i) => {
+        stagingContent = applyBlock(stagingContent, b);
+      });
+      
+      sourceContent = stagingContent;
+      renderPreview(sourceContent);
+      ui.codeEditor.value = sourceContent;
+      log(`Applied ${blocks.length} patch(es) successfully.`, 'success');
+      showToast("AI Fix Applied!");
+      
+    } catch (err) {
+      log(`Patch failed: ${err.message}`, 'err');
+      showToast("Failed to apply patch", true);
+    }
+  }
+
+  ui.btnPasteAi.addEventListener('click', handlePaste);
+
+  // Manual Paste Fallback
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'v' && e.shiftKey) {
+      e.preventDefault();
+      handlePaste();
+    }
+  });
+
+</script>
+</body>
+</html>
