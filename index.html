@@ -843,7 +843,7 @@
             body.mobile-mode #code-toolbar::-webkit-scrollbar { display: none; }
             body.mobile-mode #code-toolbar button.mini { height: 22px; padding: 0 6px; font-size: 9.5px; flex-shrink: 0; }
 
-            /* Floating code action buttons in mobile mode - top right of preview/canvas */
+            /* Floating code action buttons in mobile mode - no wrapped card bg */
                   body.mobile-mode #code-toolbar {
                     position: absolute;
                     top: 8px;
@@ -857,13 +857,12 @@
                     max-width: calc(100% - 16px);
                     overflow-x: auto;
                     scrollbar-width: none;
-                    background: rgba(15, 15, 15, 0.88);
-                    backdrop-filter: blur(8px);
-                    -webkit-backdrop-filter: blur(8px);
-                    padding: 3px 6px;
-                    border-radius: 8px;
-                    border: 1px solid rgba(255, 255, 255, 0.12);
-                    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+                    background: transparent !important;
+                    backdrop-filter: none !important;
+                    -webkit-backdrop-filter: none !important;
+                    padding: 0 !important;
+                    border: none !important;
+                    box-shadow: none !important;
                     pointer-events: auto;
                   }
                   body.mobile-mode #code-toolbar::-webkit-scrollbar {
