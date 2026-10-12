@@ -975,25 +975,7 @@
     
     <div id="resize-sidebar" class="resizer v" title="Drag to resize Explorer, double-click to reset"></div>
         <div id="main-area">
-      <div id="editor-tabs">
-              <button id="btn-toggle-sidebar" class="icon-btn" title="Hide Explorer"><svg class="ico i-collapse" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg><svg class="ico i-expand" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
-              <div class="tab-group">
-          <button id="tab-preview" class="tab-btn active">Preview</button>
-          <button id="tab-code" class="tab-btn">Code</button>
-                  </div>
-                  <span id="current-file-label">No file open</span>
-                  <div style="flex:1;"></div>
-                          <button id="btn-undo" class="icon-btn hist" disabled title="Undo (Ctrl+Z)"><svg class="ico" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span id="undo-count" class="cnt">0</span></button>
-                <button id="btn-redo" class="icon-btn hist" disabled title="Redo (Ctrl+Y)"><svg class="ico" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg><span id="redo-count" class="cnt">0</span></button>
-                <button id="btn-fullscreen" class="icon-btn" title="Fullscreen the preview and code area"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
-                <button id="btn-paste-ai" class="ai-btn" title="Apply an AI patch from the clipboard (Ctrl+Shift+V)"><svg class="ico" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Paste AI Fix</button>
-      </div>
-      
-      <div id="ai-bar">
-              <input id="ai-instruction" type="text" placeholder="Describe the change you want, then press Enter or click Copy Prompt" autocomplete="off" spellcheck="false">
-              <button id="btn-copy-prompt" class="primary mini" title="Copy rules, scenarios, your instruction and the current file for the AI"><svg class="ico" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></svg>Copy Prompt</button>
-            </div>
-            <div id="view-container">
+                    <div id="view-container">
         <button id="btn-exit-full" class="mini" title="Exit fullscreen"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>Exit</button>
                 <div id="code-toolbar">
                   <button id="btn-find" class="mini" title="Find and Replace (Ctrl+F)">Find</button>
@@ -1011,27 +993,44 @@
           <div id="media-body"></div>
         </div>
                 <div id="editor-status">
-                  <span id="status-pos">Ln 1, Col 1</span>
-                  <span id="editor-hint">Tab indent | Shift+Tab outdent | Ctrl+S push | Ctrl+Z undo | Ctrl+Y redo</span>
-                  <span class="sp"></span>
-                  <button id="btn-wrap" class="mini" title="Toggle word wrap">Wrap: off</button>
-                </div>
-      </div>
+                                  <span id="status-pos">Ln 1, Col 1</span>
+                                  <span id="editor-hint">Tab indent | Shift+Tab outdent | Ctrl+S push | Ctrl+Z undo | Ctrl+Y redo</span>
+                                  <span class="sp"></span>
+                                  <button id="btn-wrap" class="mini" title="Toggle word wrap">Wrap: off</button>
+                                </div>
+                      </div>
       
-      <div id="resize-console" class="resizer h" title="Drag to resize Terminal, double-click to reset"></div>
-            <div id="console-panel">
-        <div id="console-header">
-          <span>Terminal / Error Logs<span id="err-count" class="badge" style="display:none;">0</span></span>
-                    <div class="console-actions">
-                      <button id="btn-clear-logs" class="mini" title="Clear all logs"><svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>Clear</button>
-                      <button id="btn-copy-errors" class="mini" title="Copy errors as a ready-to-paste AI prompt"><svg class="ico" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></svg>Copy Logs for AI</button>
+                      <div id="resize-console" class="resizer h" title="Drag to resize Terminal, double-click to reset"></div>
+                      <div id="ai-bar">
+                              <input id="ai-instruction" type="text" placeholder="Describe the change you want, then press Enter or click Copy Prompt" autocomplete="off" spellcheck="false">
+                              <button id="btn-copy-prompt" class="primary mini" title="Copy rules, scenarios, your instruction and the current file for the AI"><svg class="ico" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></svg>Copy Prompt</button>
+                            </div>
+                      <div id="editor-tabs">
+                              <button id="btn-toggle-sidebar" class="icon-btn" title="Hide Explorer"><svg class="ico i-collapse" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg><svg class="ico i-expand" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+                              <div class="tab-group">
+                          <button id="tab-preview" class="tab-btn active">Preview</button>
+                          <button id="tab-code" class="tab-btn">Code</button>
+                                  </div>
+                                  <span id="current-file-label">No file open</span>
+                                  <div style="flex:1;"></div>
+                                          <button id="btn-undo" class="icon-btn hist" disabled title="Undo (Ctrl+Z)"><svg class="ico" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span id="undo-count" class="cnt">0</span></button>
+                                <button id="btn-redo" class="icon-btn hist" disabled title="Redo (Ctrl+Y)"><svg class="ico" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg><span id="redo-count" class="cnt">0</span></button>
+                                <button id="btn-fullscreen" class="icon-btn" title="Fullscreen the preview and code area"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+                                <button id="btn-paste-ai" class="ai-btn" title="Apply an AI patch from the clipboard (Ctrl+Shift+V)"><svg class="ico" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Paste AI Fix</button>
+                      </div>
+                            <div id="console-panel">
+                        <div id="console-header">
+                          <span>Terminal / Error Logs<span id="err-count" class="badge" style="display:none;">0</span></span>
+                                    <div class="console-actions">
+                                      <button id="btn-clear-logs" class="mini" title="Clear all logs"><svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>Clear</button>
+                                      <button id="btn-copy-errors" class="mini" title="Copy errors as a ready-to-paste AI prompt"><svg class="ico" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></svg>Copy Logs for AI</button>
+                                    </div>
+                        </div>
+                        <div id="console-logs"></div>
+                      </div>
                     </div>
-        </div>
-        <div id="console-logs"></div>
-      </div>
-    </div>
-  </div>
-</div>
+                  </div>
+                </div>
 
 <div id="mobile-backdrop"></div>
 <div id="toast"></div>
