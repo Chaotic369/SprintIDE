@@ -672,7 +672,7 @@
                   #dlg-title { font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
                   #dlg-msg { font-size: 12px; line-height: 1.5; color: var(--text-muted); margin-bottom: 14px; word-break: break-word; }
                   #dlg-input { display: none; width: 100%; height: 36px; padding: 0 12px; margin-bottom: 16px; background: #1c1c1c; color: #ffffff; border: none; border-radius: 10px; outline: none; font-family: var(--font-code); font-size: 12px; transition: box-shadow 0.15s ease; }
-                  #dlg-input:focus { box-shadow: 0 0 0 2px #f59e0b; }
+                  #dlg-input:focus { box-shadow: none; outline: none; }
                   #dlg-input::placeholder { color: var(--text-sub); }
                   #dlg-actions { display: flex; justify-content: flex-end; gap: 8px; }
                   #dlg-actions button { height: 30px; padding: 0 16px; border-radius: 999px; }
@@ -720,6 +720,34 @@
               #console-header { padding: 6px 12px; background: #0c0c0c; }
               .console-actions { gap: 6px; }
 
+                            /* ===== Improved popups (no blur) ===== */
+                            @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
+                            #dlg-overlay, #modal-overlay { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0, 0, 0, 0.6); }
+                            #dlg-box, #modal-box { position: relative; width: 90%; max-width: 380px; padding: 24px 22px 18px; background: #111111; border: none; border-radius: 18px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85); overflow: hidden; animation: popIn 0.16s ease both; }
+                            #dlg-box::before, #modal-box::before { content: ""; position: absolute; top: 0; left: 22px; width: 36px; height: 3px; border-radius: 0 0 4px 4px; background: #f59e0b; }
+                            #modal-box::before { background: #f43f5e; }
+                            #dlg-title { font-size: 14.5px; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
+                            #dlg-msg { font-size: 12px; line-height: 1.55; color: var(--text-muted); margin-bottom: 16px; }
+                            #dlg-msg:empty { display: none; }
+                            #dlg-input { height: 38px; background: #1c1c1c; border-radius: 10px; }
+                            #dlg-actions, #modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+                            #dlg-actions button, #modal-actions button { height: 32px; padding: 0 16px; border-radius: 8px; font-size: 11.5px; font-weight: 600; }
+                            #dlg-actions button#dlg-ok.danger, #modal-actions button#btn-modal-confirm { background: #f43f5e; color: #ffffff; }
+                            #dlg-actions button#dlg-ok.danger:hover:not(:disabled), #modal-actions button#btn-modal-confirm:hover:not(:disabled) { background: #fb5c78; color: #ffffff; }
+                            #modal-title { font-size: 14.5px; margin-bottom: 8px; }
+                            #modal-msg { font-size: 12px; line-height: 1.55; margin-bottom: 18px; word-break: break-word; }
+
+                            #toast { left: 50%; right: auto; bottom: 28px; display: flex; align-items: center; max-width: 90vw; padding: 10px 18px 10px 14px; background: #161616; border-radius: 12px; white-space: nowrap; transform: translate(-50%, 24px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7); }
+                            #toast.show { transform: translate(-50%, 0); opacity: 1; }
+                            #toast::before { content: ""; flex-shrink: 0; width: 7px; height: 7px; margin-right: 10px; border-radius: 50%; background: #10b981; }
+                            #toast.error::before { background: #f43f5e; }
+
+                            /* ===== Inline rename and new folder ===== */
+                            .inline-input { flex: 1; min-width: 0; height: 22px; padding: 0 8px; background: #000000; color: #ffffff; border: none; border-radius: 6px; outline: none; font-family: var(--font-code); font-size: 11.5px; box-shadow: none; }
+                            .inline-input::placeholder { color: var(--text-sub); }
+                            html body #workspace #sidebar .file-item.renaming { background: #1c1c1c !important; }
+                            html body #workspace #sidebar .file-item.renaming .item-actions { display: none !important; }
+
                             /* ===== Login page ===== */
                             @keyframes loginRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
                             #login-screen { background: #000000; }
@@ -754,6 +782,10 @@
                                                                       .lf-line { position: relative; flex: 1; height: 2px; margin: 0 8px; border-radius: 999px; background: #2a2a2a; overflow: hidden; }
                                                                       .lf-line i { position: absolute; top: 0; left: -35%; width: 35%; height: 100%; border-radius: 999px; background: #f59e0b; animation: lfMove 2s linear infinite; }
                                                                       .lf-line:nth-of-type(2) i { animation-delay: 1s; }
+                                                                                    .login-flow { padding: 20px 18px 38px; }
+                                                                                    .lf-node { position: relative; }
+                                                                                    .lf-label { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); font-size: 9.5px; font-weight: 500; letter-spacing: 0.04em; color: #737373; white-space: nowrap; }
+                                                                                    .lf-node.lf-hot .lf-label { color: #f59e0b; }
   </style>
 </head>
 <body>
@@ -766,11 +798,11 @@
     <h2>Sprint IDE</h2>
     <p class="login-sub">Sign in with GitHub to load your repositories and deploy changes.</p>
         <div class="login-flow">
-              <div class="lf-node"><svg class="ico" viewBox="0 0 24 24"><path d="m8 8-5 4 5 4"/><path d="m16 8 5 4-5 4"/></svg></div>
-              <div class="lf-line"><i></i></div>
-              <div class="lf-node"><svg class="ico" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></div>
-              <div class="lf-line"><i></i></div>
-              <div class="lf-node lf-hot"><svg class="ico" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg></div>
+              <div class="lf-node"><svg class="ico" viewBox="0 0 24 24"><path d="m8 8-5 4 5 4"/><path d="m16 8 5 4-5 4"/></svg><span class="lf-label">Code</span></div>
+                    <div class="lf-line"><i></i></div>
+                    <div class="lf-node"><svg class="ico" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span class="lf-label">Preview</span></div>
+                    <div class="lf-line"><i></i></div>
+                    <div class="lf-node lf-hot"><svg class="ico" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span class="lf-label">Deploy</span></div>
             </div>
         
     <button id="btn-login" class="primary"><svg class="ico" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.7 5.4-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg><span id="login-label">Sign in with GitHub</span></button>
@@ -1015,7 +1047,7 @@
   // Utilities
   function showToast(msg, isError = false) {
     ui.toast.textContent = msg;
-    ui.toast.style.borderColor = isError ? 'var(--accent-red)' : 'var(--border)';
+    ui.toast.classList.toggle('error', !!isError);
     ui.toast.classList.add('show');
     setTimeout(() => ui.toast.classList.remove('show'), 3000);
   }
@@ -1095,6 +1127,8 @@
         dlg.input.value = opts.value || '';
         dlg.input.placeholder = opts.placeholder || '';
         dlg.ok.textContent = opts.okText || 'OK';
+                dlg.ok.classList.toggle('danger', !!opts.danger);
+                dlg.ok.classList.toggle('primary', !opts.danger);
         dlg.overlay.style.display = 'flex';
         const finish = (result) => {
           dlg.overlay.style.display = 'none';
@@ -1127,7 +1161,7 @@
     }
 
     function uiConfirm(title, message, okText) {
-      return openDialog({ title: title, message: message, input: false, okText: okText || 'OK' });
+      return openDialog({ title: title, message: message, input: false, okText: okText || 'OK', danger: !!okText });
     }
 
     // Custom repository dropdown (mirrors the hidden select)
@@ -1584,9 +1618,9 @@
             }
           }
 
-          async function renameFileInGit(oldPath) {
+          async function renameFileInGit(oldPath, nameOverride) {
             const currentBase = baseName(oldPath);
-            const newBase = await uiPrompt('Rename file', 'Enter a new name for this file.', currentBase, 'file-name.ext');
+            const newBase = nameOverride;
             if (!newBase || !newBase.trim() || newBase.trim() === currentBase) return;
             const newClean = newBase.trim().replace(/^\/+/, '');
             const newPath = joinPath(dirOf(oldPath), newClean);
@@ -1621,7 +1655,65 @@
             }
           }
 
-          function buildTree() {
+          var inlineEdit = null;
+
+                    function startInlineEdit(type, path) {
+                      if (!currentRepo) {
+                        showToast("Select a repo first!", true);
+                        return;
+                      }
+                      inlineEdit = { type: type, path: path || '' };
+                      renderFileTree();
+                      var inp = ui.fileTree.querySelector('.inline-input');
+                      if (inp) {
+                        inp.focus();
+                        inp.select();
+                      }
+                    }
+
+                    function cancelInlineEdit() {
+                      if (!inlineEdit) return;
+                      inlineEdit = null;
+                      renderFileTree();
+                    }
+
+                    function makeInlineInput(initial, placeholder, onCommit) {
+                      var inp = document.createElement('input');
+                      inp.type = 'text';
+                      inp.className = 'inline-input';
+                      inp.value = initial || '';
+                      inp.placeholder = placeholder || '';
+                      inp.spellcheck = false;
+                      inp.autocomplete = 'off';
+                      var done = false;
+                      inp.addEventListener('click', function (e) { e.stopPropagation(); });
+                      inp.addEventListener('keydown', function (e) {
+                        e.stopPropagation();
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (done) return;
+                          done = true;
+                          var val = inp.value.trim();
+                          inlineEdit = null;
+                          renderFileTree();
+                          if (val) onCommit(val).catch(function (err) { log(err.message, 'err'); });
+                        } else if (e.key === 'Escape') {
+                          e.preventDefault();
+                          done = true;
+                          cancelInlineEdit();
+                        }
+                      });
+                      inp.addEventListener('blur', function () {
+                        setTimeout(function () {
+                          if (done || !inp.isConnected) return;
+                          done = true;
+                          cancelInlineEdit();
+                        }, 0);
+                      });
+                      return inp;
+                    }
+
+                    function buildTree() {
             var root = { name: '', path: '', dirs: Object.create(null), files: [] };
             fileTree.forEach(function (f) {
               var parts = f.path.split('/');
@@ -1653,6 +1745,10 @@
                         var nm = document.createElement('span');
                         nm.className = 'fi-name';
                         nm.textContent = baseName(f.path);
+                                                if (inlineEdit && inlineEdit.type === 'rename' && inlineEdit.path === f.path) {
+                                                  row.className += ' renaming';
+                                                  nm = makeInlineInput(baseName(f.path), 'file-name.ext', function (val) { return renameFileInGit(f.path, val); });
+                                                }
                         row.appendChild(ico);
                         row.appendChild(nm);
                         var acts = document.createElement('span');
@@ -1661,7 +1757,7 @@
                         btnRen.className = 'item-btn';
                         btnRen.title = 'Rename';
                         btnRen.innerHTML = svgIcon('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>', '');
-                                                btnRen.onclick = function (e) { e.stopPropagation(); renameFileInGit(f.path); };
+                                                btnRen.onclick = function (e) { e.stopPropagation(); startInlineEdit('rename', f.path); };
                                                 var btnDel = document.createElement('button');
                                                 btnDel.className = 'item-btn btn-del';
                                                 btnDel.title = 'Delete';
@@ -1699,7 +1795,18 @@
         ui.fileTree.querySelectorAll('.file-item').forEach(el => { el.onclick = null; });
         ui.fileTree.innerHTML = '';
         updateDirLabel();
-        renderLevel(buildTree(), 0, ui.fileTree);
+        if (inlineEdit && inlineEdit.type === 'folder') {
+                  var frow = document.createElement('div');
+                  frow.className = 'file-item renaming';
+                  frow.style.paddingLeft = '10px';
+                  var fico = document.createElement('span');
+                  fico.className = 'fi-icon';
+                  fico.innerHTML = svgIcon(ICON_FOLDER, '#e3b341');
+                  frow.appendChild(fico);
+                  frow.appendChild(makeInlineInput('', 'folder name in ' + dirLabel(currentDir), createFolder));
+                  ui.fileTree.appendChild(frow);
+                }
+                renderLevel(buildTree(), 0, ui.fileTree);
         if (!fileTree.length) {
           ui.fileTree.innerHTML = '<div class="tree-empty">No files in this repo yet.</div>';
         }
@@ -2303,12 +2410,14 @@
             });
           });
 
-          ui.btnNewFolder.addEventListener('click', async () => {
+          ui.btnNewFolder.addEventListener('click', () => { startInlineEdit('folder', ''); });
+
+                    async function createFolder(entered) {
             if (!currentRepo) {
               showToast("Select a repo first!", true);
               return;
             }
-            var entered = await uiPrompt('New folder', 'Folder name in ' + dirLabel(currentDir), '', 'folder-name');
+            
             if (!entered || !entered.trim()) return;
             var name = entered.trim();
             while (name.charAt(0) === '/') name = name.slice(1);
@@ -2335,8 +2444,8 @@
             } catch (err) {
               log("Folder creation failed: " + err.message, 'err');
               showToast("Error creating folder", true);
-            }
-          });
+                          }
+                        }
 
           ui.btnDirRoot.addEventListener('click', function () {
             currentDir = '';
