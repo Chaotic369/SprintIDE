@@ -855,8 +855,10 @@ body.mobile-mode #sidebar.collapsed {
                                                                                     .lf-node.lf-hot .lf-label { color: #f59e0b; }
   /* ===== Mobile mode ===== */
         #mobile-backdrop { display: none; position: fixed; inset: 0; z-index: 9050; background: rgba(0, 0, 0, 0.6); }
-        #btn-mobile-toggle { padding: 0 6px; }
+        #btn-mobile-toggle { padding: 0 8px; position: relative; overflow: visible; }
         #btn-mobile-toggle.active { background: #f59e0b; color: #1a1100; }
+        body:not(.mobile-mode) #btn-mobile-toggle .ico { transform: translateY(-2px); }
+        body:not(.mobile-mode) #btn-mobile-toggle::after { content: "mobile"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.65); font-size: 7.5px; line-height: 1; opacity: 0.75; letter-spacing: -0.03em; pointer-events: none; }
         body.mobile-mode #mobile-backdrop.show { display: block; }
         body.mobile-mode, body.mobile-mode #app-layout { 
                 height: 100vh; 
@@ -992,6 +994,7 @@ body.mobile-mode #sidebar.collapsed {
                           font-size: 0 !important;
                           gap: 0 !important;
                         }
+                body.mobile-mode #btn-mobile-toggle::after { content: "desk"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
                 body.mobile-mode #btn-fullscreen-ide::after { content: "ide"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
                 body.mobile-mode #btn-new-repo::after { content: "new"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
                 body.mobile-mode #btn-live-site::after { content: "live"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
