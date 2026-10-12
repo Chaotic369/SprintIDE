@@ -2494,27 +2494,49 @@
         if (isFull()) exitFull(); else enterFull();
       }
 
-      function toggleIdeFull() {
-        const doc = document;
-        const elem = doc.documentElement;
-        if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
-          if (elem.requestFullscreen) {
-            elem.requestFullscreen().catch(() => {});
-          } else if (elem.webkitRequestFullscreen) {
-            elem.webkitRequestFullscreen();
-          }
-        } else {
-          if (doc.exitFullscreen) {
-            doc.exitFullscreen().catch(() => {});
-          } else if (doc.webkitExitFullscreen) {
-            doc.webkitExitFullscreen();
-          }
-        }
-      }
+      async function toggleIdeFull() {
+              const doc = document;
+              const elem = doc.documentElement;
+              const isFullscreen = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement);
 
-      if (ui.btnFullIde) {
-        ui.btnFullIde.addEventListener('click', toggleIdeFull);
-      }
+              if (!isFullscreen) {
+                try {
+                  if (elem.requestFullscreen) {
+                    await elem.requestFullscreen();
+                  } else if (elem.webkitRequestFullscreen) {
+                    await elem.webkitRequestFullscreen();
+                  } else if (elem.mozRequestFullScreen) {
+                    await elem.mozRequestFullScreen();
+                  } else if (elem.msRequestFullscreen) {
+                    await elem.msRequestFullscreen();
+                  }
+                } catch (err) {
+                  log('Fullscreen error: ' + err.message, 'err');
+                }
+              } else {
+                try {
+                  if (doc.exitFullscreen) {
+                    await doc.exitFullscreen();
+                  } else if (doc.webkitExitFullscreen) {
+                    await doc.webkitExitFullscreen();
+                  } else if (doc.mozCancelFullScreen) {
+                    await doc.mozCancelFullScreen();
+                  } else if (doc.msExitFullscreen) {
+                    await doc.msExitFullscreen();
+                  }
+                } catch (err) {
+                  log('Exit fullscreen error: ' + err.message, 'err');
+                }
+              }
+            }
+
+            const ideFullBtn = document.getElementById('btn-fullscreen-ide');
+            if (ideFullBtn) {
+              ideFullBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleIdeFull();
+              });
+            }
 
       ui.btnFull.addEventListener('click', toggleFull);
       ui.btnExitFull.addEventListener('click', exitFull);
