@@ -247,23 +247,44 @@
   .tab-btn.active { color: #fff; background: var(--bg-elevated); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
   
   #view-container { flex: 1; position: relative; display: flex; min-height: 0; }
-  #monaco-container { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+  #code-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    background: #000000;
+  }
+  #line-numbers {
+    width: 48px;
+    height: 100%;
+    background: #000000;
+    color: #404040;
+    font-family: var(--font-code);
+    font-size: 13px;
+    line-height: 21px;
+    padding: 12px 8px 34px 0;
+    text-align: right;
+    user-select: none;
+    overflow: hidden;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+  }
   #code-editor { 
-    position: absolute; 
-    inset: 0; 
-    width: 100%; 
+    flex: 1;
     height: 100%; 
-    background: #090a0f; 
-    color: #e2e8f0; 
+    background: #000000; 
+    color: #e5e5e5; 
     font-family: var(--font-code); 
-    font-size: 12.5px; 
-    line-height: 1.5; 
+    font-size: 13px; 
+    line-height: 21px; 
     padding: 12px 14px 34px; 
     border: none; 
     resize: none; 
     outline: none; 
-    display: none; 
     tab-size: 2; 
+    overflow: auto;
+    white-space: pre;
   }
   #preview-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: none; background: transparent; display: block; border-radius: inherit; }
   #media-viewer { position: absolute; inset: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-dark); z-index: 3; padding: 24px; }
@@ -1086,22 +1107,20 @@ body.mobile-mode #sidebar.collapsed {
                 body.mobile-mode #editor-status button.mini { height: 16px; padding: 0 4px; font-size: 8px; }
                 body.mobile-mode #console-panel,
                 body.mobile-mode #resize-console { display: none !important; }
+                body.mobile-mode #line-numbers {
+                    width: 38px;
+                    font-size: 11px;
+                    line-height: 18px;
+                    padding: 6px 4px 36px 0;
+                }
                 body.mobile-mode #code-editor { 
-                          font-size: 11px; 
-                          padding: 6px 8px 36px; 
-                          overflow: auto !important; 
-                          -webkit-overflow-scrolling: touch !important; 
-                          touch-action: pan-x pan-y !important; 
-                        }
-                        body.mobile-mode #monaco-container {
-                          overflow: hidden !important;
-                          touch-action: pan-x pan-y !important;
-                        }
-                        body.mobile-mode #monaco-container .monaco-editor,
-                        body.mobile-mode #monaco-container .monaco-editor .overflow-guard,
-                        body.mobile-mode #monaco-container .monaco-editor .monaco-scrollable-element {
-                          touch-action: pan-x pan-y !important;
-                        }
+                    font-size: 11px; 
+                    line-height: 18px;
+                    padding: 6px 8px 36px; 
+                    overflow: auto !important; 
+                    -webkit-overflow-scrolling: touch !important; 
+                    touch-action: pan-x pan-y !important; 
+                }
 
               /* Mobile toast/flash logs inside preview area - single combined HUD banner */
                             #mobile-flash-logs {
@@ -1349,8 +1368,10 @@ body.mobile-mode #sidebar.collapsed {
                   <button id="btn-code-clear" class="mini danger" title="Clear code editor">Clear</button>
                 </div>
                         <div id="empty-watermark" class="watermark">Generate your app with AI,<br>copy the code, and click 'Paste AI Fix'</div>
-        <div id="monaco-container"></div>
-        <textarea id="code-editor" spellcheck="false" wrap="off" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+        <div id="code-wrapper">
+          <div id="line-numbers">1</div>
+          <textarea id="code-editor" spellcheck="false" wrap="off" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+        </div>
         <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
                 <div id="mobile-flash-logs"></div>
                 <div id="media-viewer">
