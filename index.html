@@ -49,7 +49,7 @@
   
   /* Sidebar */
   #sidebar { width: 170px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-  .sidebar-header { padding: 4px 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .sidebar-header { padding: 4px 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-start; align-items: center; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
   #file-tree { flex: 1; overflow-y: auto; padding: 4px 0; }
   .file-item { padding: 3px 8px; overflow: hidden; white-space: nowrap; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--text-muted); user-select: none; border-left: 2px solid transparent; }
   .file-item:hover { background: rgba(255,255,255,0.04); color: #fff; }
@@ -185,14 +185,13 @@
   <div id="workspace">
     <div id="sidebar">
       <div class="sidebar-header">
-        <span>Explorer</span>
-        <div class="side-actions">
-                  <button id="btn-new-file" class="mini" title="New file in the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v6M9 15h6"/></svg><span>File</span></button>
-                  <button id="btn-new-folder" class="mini" title="New folder in the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v6M9 14h6"/></svg><span>Folder</span></button>
-                  <button id="btn-upload" class="mini" title="Upload files to the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg><span>Upload</span></button>
-                  <input id="file-upload" type="file" multiple hidden>
-                </div>
-      </div>
+              <div class="side-actions">
+                        <button id="btn-new-file" class="mini" title="New file in the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v6M9 15h6"/></svg><span>File</span></button>
+                        <button id="btn-new-folder" class="mini" title="New folder in the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v6M9 14h6"/></svg><span>Folder</span></button>
+                        <button id="btn-upload" class="mini" title="Upload files to the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg><span>Upload</span></button>
+                        <input id="file-upload" type="file" multiple hidden>
+                      </div>
+            </div>
       <div id="dir-bar" title="New files, folders and uploads go into this folder">
               <svg class="ico" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
               <span id="dir-label">repo root</span>
