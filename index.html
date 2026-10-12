@@ -1221,15 +1221,15 @@
                     }
 
                     function doRedo() {
-                      if (monacoEditor && monacoReady && ui.tabCode.classList.contains('active')) {
-                        monacoEditor.trigger('redo', 'redo', null);
-                        return;
-                      }
-                      histCommit();
-                      if (!redoStack.length) return;
-                  0     undoStack.push(sourceContent);
-                      applyHist(redoStack.pop());
-                    }
+                                          if (monacoEditor && monacoReady && ui.tabCode.classList.contains('active')) {
+                                            monacoEditor.trigger('redo', 'redo', null);
+                                            return;
+                                          }
+                                          histCommit();
+                                          if (!redoStack.length) return;
+                                          undoStack.push(sourceContent);
+                                          applyHist(redoStack.pop());
+                                        }
 
                     function updateStatus() {
                     if (monacoEditor && monacoReady) {
