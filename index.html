@@ -1343,6 +1343,7 @@ body.mobile-mode #sidebar.collapsed {
                 <div id="code-toolbar">
                   <button id="btn-find" class="mini" title="Find and Replace (Ctrl+F)">Find</button>
                   <button id="btn-goto" class="mini" title="Go to Line (Ctrl+G)">Go to Line</button>
+                  <button id="btn-code-select-all" class="mini" title="Select All (Ctrl+A)">Select All</button>
                   <button id="btn-code-copy" class="mini" title="Copy code">Copy</button>
                   <button id="btn-code-paste" class="mini" title="Paste clipboard text">Paste</button>
                   <button id="btn-code-clear" class="mini danger" title="Clear code editor">Clear</button>
@@ -1581,6 +1582,7 @@ body.mobile-mode #sidebar.collapsed {
       codeToolbar: document.getElementById('code-toolbar'),
       btnFind: document.getElementById('btn-find'),
       btnGoto: document.getElementById('btn-goto'),
+      btnCodeSelectAll: document.getElementById('btn-code-select-all'),
       btnCodeCopy: document.getElementById('btn-code-copy'),
       btnCodePaste: document.getElementById('btn-code-paste'),
       btnCodeClear: document.getElementById('btn-code-clear'),
