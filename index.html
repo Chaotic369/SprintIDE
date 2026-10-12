@@ -1616,13 +1616,19 @@
             e.stopPropagation();
             const willOpen = !wrap.classList.contains('open');
             if (willOpen) {
-              sync();
-              const r = btn.getBoundingClientRect();
-              menu.style.top = (r.bottom + 6) + 'px';
-              menu.style.left = r.left + 'px';
-              menu.style.minWidth = Math.max(160, r.width) + 'px';
-              wrap.classList.add('open');
-            } else {
+                          sync();
+                          const r = btn.getBoundingClientRect();
+                          if (isMobileMode()) {
+                            menu.style.top = 'auto';
+                            menu.style.bottom = (window.innerHeight - r.top + 6) + 'px';
+                          } else {
+                            menu.style.bottom = 'auto';
+                            menu.style.top = (r.bottom + 6) + 'px';
+                          }
+                          menu.style.left = r.left + 'px';
+                          menu.style.minWidth = Math.max(160, r.width) + 'px';
+                          wrap.classList.add('open');
+                        } else {
               closeMenu();
             }
           });
