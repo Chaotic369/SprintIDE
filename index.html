@@ -786,8 +786,39 @@
                                                                                     .lf-node { position: relative; }
                                                                                     .lf-label { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); font-size: 9.5px; font-weight: 500; letter-spacing: 0.04em; color: #737373; white-space: nowrap; }
                                                                                     .lf-node.lf-hot .lf-label { color: #f59e0b; }
-  </style>
-</head>
+  /* ===== Mobile mode ===== */
+    #mobile-backdrop { display: none; position: fixed; inset: 0; z-index: 9050; background: rgba(0, 0, 0, 0.6); }
+    #btn-mobile-toggle { padding: 0 9px; }
+    #btn-mobile-toggle.active { background: #f59e0b; color: #1a1100; }
+    body.mobile-mode #mobile-backdrop.show { display: block; }
+    body.mobile-mode, body.mobile-mode #app-layout { height: 100vh; height: 100dvh; }
+    body.mobile-mode #header { height: 44px; margin: 6px; padding: 0 8px; gap: 6px; }
+    body.mobile-mode .brand-tag, body.mobile-mode #user-display, body.mobile-mode #btn-fullscreen-ide, body.mobile-mode #resize-sidebar, body.mobile-mode #resize-console, body.mobile-mode #editor-hint { display: none !important; }
+    body.mobile-mode #header .header-group:first-of-type { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    body.mobile-mode #header .header-group:last-of-type { flex-shrink: 0; gap: 6px; }
+    body.mobile-mode #header .header-group::-webkit-scrollbar { display: none; }
+    body.mobile-mode #header .header-group > * { flex-shrink: 0; }
+    body.mobile-mode .dd-btn { min-width: 100px; max-width: 130px; }
+    body.mobile-mode button { height: 34px; }
+    body.mobile-mode button.mini { height: 30px; }
+    body.mobile-mode #btn-new-repo, body.mobile-mode #btn-live-site, body.mobile-mode #btn-logout, body.mobile-mode button.ai-btn, body.mobile-mode #btn-copy-prompt, body.mobile-mode #console-header .console-actions button { font-size: 0; gap: 0; padding: 0 10px; }
+    body.mobile-mode #workspace { padding: 0 6px 6px; }
+    body.mobile-mode #main-area { border-radius: 12px; }
+    body.mobile-mode #sidebar { position: fixed; top: 0; bottom: 0; left: 0; width: 84vw !important; max-width: 320px; z-index: 9100; border-radius: 0 16px 16px 0; box-shadow: 0 0 40px rgba(0, 0, 0, 0.85); padding-top: env(safe-area-inset-top, 0px); }
+    body.mobile-mode .file-item { height: 36px; }
+    body.mobile-mode .item-actions { display: inline-flex; }
+    body.mobile-mode .item-btn { width: 30px; height: 30px; }
+    body.mobile-mode #editor-tabs { overflow-x: auto; scrollbar-width: none; gap: 6px; padding: 0 8px; }
+    body.mobile-mode #editor-tabs::-webkit-scrollbar { display: none; }
+    body.mobile-mode #editor-tabs > * { flex-shrink: 0; }
+    body.mobile-mode #editor-tabs #current-file-label { flex: 0 0 auto; max-width: 110px; }
+    body.mobile-mode #ai-bar { padding: 6px 8px; }
+    body.mobile-mode #ai-instruction { height: 34px; font-size: 16px; }
+    body.mobile-mode #dlg-input { font-size: 16px; }
+    body.mobile-mode #console-panel { height: 72px !important; }
+    body.mobile-mode #console-logs { padding-right: 90px; }
+    </style>
+  </head>
 <body>
 
 <script>try { if (localStorage.getItem('vibe_ide_session')) document.documentElement.classList.add('has-session'); } catch (e) { }</script>
@@ -826,7 +857,8 @@
       <button id="btn-fullscreen-ide" class="icon-btn" title="Fullscreen Sprint IDE"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
     </div>
     <div class="header-group">
-          <span id="user-display" title="GitHub user (signed in)"></span>
+          <button id="btn-mobile-toggle" class="icon-btn" title="Switch to mobile UI"><svg class="ico" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></button>
+                    <span id="user-display" title="GitHub user (signed in)"></span>
       <button id="btn-push" class="primary" disabled title="Commit and deploy changes"><svg class="ico" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span id="push-label">Push</span></button>
       <button id="btn-logout" class="danger"><svg class="ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Logout</button>
     </div>
@@ -911,6 +943,7 @@
   </div>
 </div>
 
+<div id="mobile-backdrop"></div>
 <div id="toast"></div>
 
 <div id="dlg-overlay">
@@ -2995,7 +3028,64 @@
 
       ui.btnPasteAi.addEventListener('click', handlePaste);
 
-  restoreSession();
+  // Mobile mode
+    const MOBILE_KEY = 'sprint_ide_mobile';
+    const btnMobile = document.getElementById('btn-mobile-toggle');
+    const mobileBackdrop = document.getElementById('mobile-backdrop');
+
+    function isMobileMode() {
+      return document.body.classList.contains('mobile-mode');
+    }
+
+    function closeDrawer() {
+      if (!isMobileMode()) return;
+      ui.sidebar.classList.add('collapsed');
+      ui.btnToggleSidebar.classList.add('is-collapsed');
+      ui.btnToggleSidebar.title = 'Show Explorer';
+      mobileBackdrop.classList.remove('show');
+    }
+
+    function syncBackdrop() {
+      mobileBackdrop.classList.toggle('show', isMobileMode() && !ui.sidebar.classList.contains('collapsed'));
+    }
+
+    function setMobileMode(on, save) {
+      document.body.classList.toggle('mobile-mode', on);
+      btnMobile.classList.toggle('active', on);
+      btnMobile.title = on ? 'Switch to desktop UI' : 'Switch to mobile UI';
+      if (save) {
+        try { localStorage.setItem(MOBILE_KEY, on ? '1' : '0'); } catch (e) { }
+      }
+      ui.sidebar.style.width = '';
+      ui.consolePanel.style.height = '';
+      if (on) {
+        closeDrawer();
+      } else {
+        ui.sidebar.classList.remove('collapsed');
+        ui.btnToggleSidebar.classList.remove('is-collapsed');
+        ui.btnToggleSidebar.title = 'Hide Explorer';
+        mobileBackdrop.classList.remove('show');
+      }
+      if (monacoEditor && monacoReady) monacoEditor.layout();
+    }
+
+    btnMobile.addEventListener('click', () => { setMobileMode(!isMobileMode(), true); });
+    ui.btnToggleSidebar.addEventListener('click', syncBackdrop);
+    mobileBackdrop.addEventListener('click', closeDrawer);
+    ui.fileTree.addEventListener('click', (e) => {
+      if (!isMobileMode()) return;
+      if (e.target.closest('.dir-item') || e.target.closest('.item-actions') || e.target.closest('.inline-input')) return;
+      if (e.target.closest('.file-item')) setTimeout(closeDrawer, 150);
+    });
+
+    (function initMobileMode() {
+      let pref = null;
+      try { pref = localStorage.getItem(MOBILE_KEY); } catch (e) { }
+      const auto = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+      setMobileMode(pref === null ? auto : pref === '1', false);
+    })();
+
+    restoreSession();
 
     // Manual Paste Fallback
   document.addEventListener('keydown', (e) => {
