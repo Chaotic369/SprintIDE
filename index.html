@@ -829,7 +829,8 @@
                 border-radius: 8px; 
                 flex-shrink: 0;
               }
-        body.mobile-mode .brand-tag, body.mobile-mode #user-display, body.mobile-mode #btn-fullscreen-ide, body.mobile-mode #resize-sidebar, body.mobile-mode #resize-console, body.mobile-mode #editor-hint { display: none !important; }
+        body.mobile-mode .brand-tag, body.mobile-mode #user-display, body.mobile-mode #resize-sidebar, body.mobile-mode #resize-console, body.mobile-mode #editor-hint { display: none !important; }
+                body.mobile-mode #btn-fullscreen-ide { display: inline-flex !important; }
         body.mobile-mode #header .header-group:first-of-type { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; gap: 3px; }
         body.mobile-mode #header .header-group:last-of-type { flex-shrink: 0; gap: 3px; }
         body.mobile-mode #header .header-group::-webkit-scrollbar { display: none; }
@@ -852,6 +853,7 @@
                   font-size: 0 !important;
                   gap: 0 !important;
                 }
+                body.mobile-mode #btn-fullscreen-ide::after { content: "ide"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
                 body.mobile-mode #btn-new-repo::after { content: "new"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
                 body.mobile-mode #btn-live-site::after { content: "live"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
                 body.mobile-mode #btn-logout::after { content: "exit"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
