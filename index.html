@@ -894,22 +894,25 @@
                 body.mobile-mode #btn-copy-prompt .ico {
                   transform: translateY(-2px);
                 }
-        body.mobile-mode #workspace { padding: 0 !important; margin: 0 !important; }
+        body.mobile-mode #workspace { 
+                  padding: 6px 8px 0 8px !important; 
+                  margin: 0 !important; 
+                }
                 body.mobile-mode #main-area { 
-                  border-radius: 0 !important; 
+                  border-radius: 14px !important; 
                   margin: 0 !important; 
                   background: #000000 !important;
-                  border: none !important;
+                  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+                  overflow: hidden !important;
                 }
                 body.mobile-mode #header {
                   order: 2;
-                  margin: 0 !important;
-                  border-radius: 0 !important;
-                  background: #09090b !important;
-                  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-                  border-bottom: none !important;
-                  padding: 0 6px env(safe-area-inset-bottom, 0px) !important;
-                  height: calc(32px + env(safe-area-inset-bottom, 0px)) !important;
+                  margin: 6px 8px calc(env(safe-area-inset-bottom, 0px) + 6px) 8px !important;
+                  border-radius: 12px !important;
+                  background: #0c0c0e !important;
+                  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                  padding: 0 8px !important;
+                  height: 34px !important;
                 }
                 body.mobile-mode #sidebar { position: fixed; top: 0; bottom: 0; left: 0; width: 78vw !important; max-width: 240px; z-index: 9100; border-radius: 0 10px 10px 0; box-shadow: 0 0 25px rgba(0, 0, 0, 0.85); padding-top: env(safe-area-inset-top, 0px); }
                 body.mobile-mode .sidebar-header { height: 30px; padding: 0 5px; }
@@ -952,23 +955,23 @@
                                 body.mobile-mode #btn-desk-view::after { content: "desk"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
 
                                 /* Rotated desktop canvas in mobile preview */
-                                                                        body.mobile-mode.is-desktop-view #view-container {
-                                                                          overflow: hidden !important;
-                                                                          position: relative !important;
-                                                                        }
-                                                                        body.mobile-mode.is-desktop-view #preview-frame {
-                                                                          position: absolute !important;
-                                                                          top: 50% !important;
-                                                                          left: 50% !important;
-                                                                          width: var(--desk-w, 100vh) !important;
-                                                                          height: var(--desk-h, 100vw) !important;
-                                                                          max-width: none !important;
-                                                                          max-height: none !important;
-                                                                          transform: translate(-50%, -50%) rotate(90deg) !important;
-                                                                          transform-origin: center center !important;
-                                                                          border-radius: 0 !important;
-                                                                          z-index: 10 !important;
-                                                                        }
+                                                                body.mobile-mode.is-desktop-view #view-container {
+                                                                  overflow: hidden !important;
+                                                                  position: relative !important;
+                                                                }
+                                                                body.mobile-mode.is-desktop-view #preview-frame {
+                                                                  position: absolute !important;
+                                                                  top: 50% !important;
+                                                                  left: 50% !important;
+                                                                  width: var(--desk-w, 100%) !important;
+                                                                  height: var(--desk-h, 100%) !important;
+                                                                  max-width: none !important;
+                                                                  max-height: none !important;
+                                                                  transform: translate(-50%, -50%) rotate(90deg) !important;
+                                                                  transform-origin: center center !important;
+                                                                  border-radius: 0 !important;
+                                                                  z-index: 10 !important;
+                                                                }
                                 body.mobile-mode #dlg-input { font-size: 11px; height: 28px; }
                 body.mobile-mode #editor-status { height: 18px; padding: 0 6px; font-size: 8.5px; }
                 body.mobile-mode #editor-status button.mini { height: 16px; padding: 0 4px; font-size: 8px; }
@@ -1407,24 +1410,25 @@
                   };
 
                   function updateDesktopDimensions() {
-                    if (!document.body.classList.contains('is-desktop-view')) return;
-                    const rect = ui.viewContainer.getBoundingClientRect();
-                    document.documentElement.style.setProperty('--desk-w', rect.height + 'px');
-                    document.documentElement.style.setProperty('--desk-h', rect.width + 'px');
-                  }
+                                      if (!document.body.classList.contains('is-desktop-view') || !ui.viewContainer) return;
+                                      const rect = ui.viewContainer.getBoundingClientRect();
+                                      if (!rect.width || !rect.height) return;
+                                      document.documentElement.style.setProperty('--desk-w', rect.height + 'px');
+                                      document.documentElement.style.setProperty('--desk-h', rect.width + 'px');
+                                    }
 
-                  if (ui.btnDeskView) {
-                    ui.btnDeskView.addEventListener('click', () => {
-                      if (!ui.tabPreview.classList.contains('active')) {
-                        ui.tabPreview.click();
-                      }
-                      const active = document.body.classList.toggle('is-desktop-view');
-                      ui.btnDeskView.classList.toggle('active', active);
-                      if (active) updateDesktopDimensions();
-                      showToast(active ? 'Desktop landscape preview enabled' : 'Normal view restored');
-                    });
-                    window.addEventListener('resize', updateDesktopDimensions);
-                  }
+                                    if (ui.btnDeskView) {
+                                      ui.btnDeskView.addEventListener('click', () => {
+                                        if (!ui.tabPreview.classList.contains('active')) {
+                                          ui.tabPreview.click();
+                                        }
+                                        const active = document.body.classList.toggle('is-desktop-view');
+                                        ui.btnDeskView.classList.toggle('active', active);
+                                        if (active) setTimeout(updateDesktopDimensions, 30);
+                                        showToast(active ? 'Desktop landscape preview enabled' : 'Normal view restored');
+                                      });
+                                      window.addEventListener('resize', updateDesktopDimensions);
+                                    }
 
   // Utilities
   function showToast(msg, isError = false) {
