@@ -1114,6 +1114,8 @@ body.mobile-mode #sidebar.collapsed {
                     font-size: 11px;
                     line-height: 18px;
                     padding: 6px 4px 36px 0;
+                    white-space: pre;
+                    box-sizing: border-box;
                 }
                 body.mobile-mode #code-editor { 
                     font-size: 11px; 
@@ -1122,6 +1124,7 @@ body.mobile-mode #sidebar.collapsed {
                     overflow: auto !important; 
                     -webkit-overflow-scrolling: touch !important; 
                     touch-action: pan-x pan-y !important; 
+                    box-sizing: border-box;
                 }
 
               /* Mobile toast/flash logs inside preview area - single combined HUD banner */
@@ -3069,11 +3072,12 @@ body.mobile-mode #sidebar.collapsed {
   function updateLineNumbers() {
     if (!ui.lineNumbers || !ui.codeEditor) return;
     const lines = ui.codeEditor.value.split('\n').length;
-    let nums = '';
+    let nums = [];
     for (let i = 1; i <= lines; i++) {
-      nums += i + '\n';
+      nums.push(i);
     }
-    ui.lineNumbers.textContent = nums;
+    ui.lineNumbers.textContent = nums.join('\n');
+    ui.lineNumbers.scrollTop = ui.codeEditor.scrollTop;
   }
 
   function updateStatus() {
