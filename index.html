@@ -863,18 +863,18 @@
         body.mobile-mode button.mini { height: 20px; padding: 0 5px; font-size: 8.5px; border-radius: 4px; }
         body.mobile-mode button.icon-btn { height: 22px; padding: 0 6px; }
         body.mobile-mode .ico { width: 13px; height: 13px; }
-        body.mobile-mode button,
-                body.mobile-mode button.primary,
-                body.mobile-mode button.ai-btn,
-                body.mobile-mode button.danger,
-                body.mobile-mode #btn-new-repo,
-                body.mobile-mode #btn-copy-prompt,
-                body.mobile-mode #btn-mobile-toggle,
-                body.mobile-mode #btn-mobile-toggle.active,
+        body.mobile-mode button:not(.primary):not(.ai-btn):not(#btn-new-repo):not(#btn-copy-prompt):not(#btn-paste-ai):not(#btn-mobile-toggle.active),
                 body.mobile-mode .dd-btn {
                   background: #000000 !important;
-                  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-                  color: #ffffff !important;
+                  border: none !important;
+                  outline: none !important;
+                  box-shadow: none !important;
+                }
+                body.mobile-mode button,
+                body.mobile-mode .dd-btn,
+                body.mobile-mode #ai-instruction {
+                  border: none !important;
+                  outline: none !important;
                   box-shadow: none !important;
                 }
                 body.mobile-mode button.icon-btn,
