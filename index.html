@@ -102,6 +102,9 @@
             body.resizing-v { cursor: col-resize; }
             body.resizing-h { cursor: row-resize; }
             #sidebar.collapsed + #resize-sidebar { display: none; }
+              #btn-toggle-sidebar .i-expand { display: none; }
+              #btn-toggle-sidebar.is-collapsed .i-collapse { display: none; }
+              #btn-toggle-sidebar.is-collapsed .i-expand { display: inline; }
         .ico { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
         .brand-tag .ico { color: var(--accent-blue); }
         .file-item .fi-icon { display: inline-flex; align-items: center; }
@@ -149,7 +152,7 @@
     <div id="resize-sidebar" class="resizer v" title="Drag to resize Explorer, double-click to reset"></div>
         <div id="main-area">
       <div id="editor-tabs">
-              <button id="btn-toggle-sidebar" class="icon-btn" title="Show / hide Explorer"><svg class="ico" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+              <button id="btn-toggle-sidebar" class="icon-btn" title="Hide Explorer"><svg class="ico i-collapse" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg><svg class="ico i-expand" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
               <div class="tab-group">
           <button id="tab-preview" class="tab-btn active">Preview</button>
           <button id="tab-code" class="tab-btn">Code</button>
@@ -914,6 +917,9 @@
 
     ui.btnToggleSidebar.addEventListener('click', () => {
       ui.sidebar.classList.toggle('collapsed');
+            var isCol = ui.sidebar.classList.contains('collapsed');
+            ui.btnToggleSidebar.classList.toggle('is-collapsed', isCol);
+            ui.btnToggleSidebar.title = isCol ? 'Show Explorer' : 'Hide Explorer';
     });
 
     ui.btnCopyErrors.addEventListener('click', () => {
