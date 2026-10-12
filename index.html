@@ -1081,7 +1081,22 @@
                 body.mobile-mode #editor-status button.mini { height: 16px; padding: 0 4px; font-size: 8px; }
                 body.mobile-mode #console-panel,
                 body.mobile-mode #resize-console { display: none !important; }
-                body.mobile-mode #code-editor { font-size: 11px; padding: 6px 8px 24px; }
+                body.mobile-mode #code-editor { 
+                          font-size: 11px; 
+                          padding: 6px 8px 36px; 
+                          overflow: auto !important; 
+                          -webkit-overflow-scrolling: touch !important; 
+                          touch-action: pan-x pan-y !important; 
+                        }
+                        body.mobile-mode #monaco-container {
+                          overflow: hidden !important;
+                          touch-action: pan-x pan-y !important;
+                        }
+                        body.mobile-mode #monaco-container .monaco-editor,
+                        body.mobile-mode #monaco-container .monaco-editor .overflow-guard,
+                        body.mobile-mode #monaco-container .monaco-editor .monaco-scrollable-element {
+                          touch-action: pan-x pan-y !important;
+                        }
 
               /* Mobile toast/flash logs inside preview area - single combined HUD banner */
                             #mobile-flash-logs {
