@@ -1447,7 +1447,7 @@
       <input type="file" id="new-repo-file-input" hidden>
       <div id="new-repo-upload-zone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:90px;padding:12px;background:#1c1c1c;border-radius:10px;cursor:pointer;user-select:none;transition:background 0.15s ease;">
         <svg id="new-repo-upload-ico" class="ico" viewBox="0 0 24 24" style="width:22px;height:22px;color:var(--accent-cyan);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
-        <span id="new-repo-upload-label" style="font-size:11.5px;color:var(--text-muted);font-family:var(--font-ui);pointer-events:none;text-align:center;">Click to select file</span>
+        <span id="new-repo-upload-label" style="font-size:11.5px;color:var(--text-muted);font-family:var(--font-ui);pointer-events:none;text-align:center;">Click to select file (or .zip)</span>
       </div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
@@ -2597,7 +2597,7 @@
         newRepoFileInput.removeAttribute('accept');
         if (newRepoUploadIco) newRepoUploadIco.innerHTML = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>';
         if (newRepoUploadLabel && !file) {
-          newRepoUploadLabel.textContent = 'Click to select file';
+          newRepoUploadLabel.textContent = 'Click to select file (or .zip)';
           newRepoUploadLabel.style.color = 'var(--text-muted)';
         }
       }
@@ -2620,8 +2620,7 @@
         return;
       }
 
-      let initialFileName = '';
-      let initialB64 = '';
+      let initialFiles = [];
 
       if (newRepoMode === 'paste') {
         const pasted = newRepoPasteContent.value.trim();
@@ -2630,22 +2629,50 @@
           newRepoPasteContent.focus();
           return;
         }
-        initialFileName = 'index.html';
-        initialB64 = unicodeToBase64(pasted);
+        initialFiles.push({ path: 'index.html', b64: unicodeToBase64(pasted) });
       } else if (newRepoMode === 'upload-html' || newRepoMode === 'upload-file') {
         const file = newRepoFileInput.files && newRepoFileInput.files[0];
         if (!file) {
           showToast('Please choose a file to upload', true);
           return;
         }
-        initialFileName = (newRepoMode === 'upload-html' && !file.name.toLowerCase().endsWith('.html') && !file.name.toLowerCase().endsWith('.htm'))
-          ? 'index.html'
-          : file.name;
-        try {
-          initialB64 = await fileToBase64(file);
-        } catch (err) {
-          showToast('Failed to read file', true);
-          return;
+
+        const isZip = file.name.toLowerCase().endsWith('.zip');
+        if (newRepoMode === 'upload-file' && isZip) {
+          if (typeof JSZip === 'undefined') {
+            showToast('ZIP library is not loaded', true);
+            return;
+          }
+          try {
+            log('Extracting ZIP archive: ' + file.name + '...');
+            const zip = await JSZip.loadAsync(file);
+            const entries = Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.startsWith('__MACOSX/'));
+            if (!entries.length) {
+              showToast('ZIP file is empty', true);
+              return;
+            }
+            for (let i = 0; i < entries.length; i++) {
+              const item = zip.files[entries[i]];
+              const cleanPath = item.name.replace(/^\/+/, '');
+              const b64 = await item.async('base64');
+              initialFiles.push({ path: cleanPath, b64: b64 });
+            }
+          } catch (err) {
+            log('Failed to extract zip: ' + err.message, 'err');
+            showToast('Failed to extract zip file', true);
+            return;
+          }
+        } else {
+          const initialFileName = (newRepoMode === 'upload-html' && !file.name.toLowerCase().endsWith('.html') && !file.name.toLowerCase().endsWith('.htm'))
+            ? 'index.html'
+            : file.name;
+          try {
+            const b64 = await fileToBase64(file);
+            initialFiles.push({ path: initialFileName, b64: b64 });
+          } catch (err) {
+            showToast('Failed to read file', true);
+            return;
+          }
         }
       }
 
@@ -2661,19 +2688,24 @@
         });
         if (!res.ok) throw new Error(await res.text());
         const repoData = await res.json();
-        setRepoProgress(50);
+        setRepoProgress(40);
 
-        if (newRepoMode === 'empty') {
+        if (newRepoMode === 'empty' || !initialFiles.length) {
           log('Repository created (empty).');
         } else {
-          log(`Committing ${initialFileName}...`);
-          await fetch(`https://api.github.com/repos/${repoData.full_name}/contents/${initialFileName}`, {
-            method: 'PUT',
-            headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: `Initial commit: ${initialFileName}`, content: initialB64, branch: 'main' })
-          });
+          for (let i = 0; i < initialFiles.length; i++) {
+            const f = initialFiles[i];
+            log(`Committing ${f.path} (${i + 1}/${initialFiles.length})...`);
+            const targetUrl = ['https:', '', 'api.github.com', 'repos', repoData.full_name, 'contents', f.path.split('/').map(encodeURIComponent).join('/')].join('/');
+            await fetch(targetUrl, {
+              method: 'PUT',
+              headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: `Initial commit: ${f.path}`, content: f.b64, branch: 'main' })
+            });
+            setRepoProgress(40 + Math.round(((i + 1) / initialFiles.length) * 35));
+          }
         }
-        setRepoProgress(75);
+        setRepoProgress(80);
 
         log('Enabling GitHub Pages...');
         await fetch(`https://api.github.com/repos/${repoData.full_name}/pages`, {
