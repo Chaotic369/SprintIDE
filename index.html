@@ -898,6 +898,7 @@
   // State
     let monacoEditor = null;
     let monacoReady = false;
+        let monacoLoading = false;
     let deletedFileUndoHistory = null;
 
     // DOM Elements
@@ -1985,7 +1986,12 @@
                   }
 
                   function initMonaco() {
-                    if (window.require && !monacoEditor) {
+                    if (!window.require && !monacoEditor) {
+                                          if (ui.tabCode.classList.contains('active')) setTimeout(initMonaco, 300);
+                                          return;
+                                        }
+                                        if (window.require && !monacoEditor && !monacoLoading) {
+                                          monacoLoading = true;
                       window.require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
                       window.require(['vs/editor/editor.main'], function () {
                         window.monaco.editor.defineTheme('sprint-dark', {
@@ -2062,7 +2068,19 @@
                           updateStatus();
                         });
                         monacoEditor.onDidChangeCursorPosition(updateStatus);
-                      });
+                                                if (ui.tabCode.classList.contains('active')) {
+                                                  ui.monacoContainer.style.display = 'block';
+                                                  ui.codeEditor.style.display = 'none';
+                                                  const readyModel = monacoEditor.getModel();
+                                                  if (readyModel && currentFile) window.monaco.editor.setModelLanguage(readyModel, getMonacoLanguage(currentFile));
+                                                  monacoEditor.setValue(sourceContent);
+                                                  monacoEditor.layout();
+                                                  updateStatus();
+                                                }
+                                              }, function () {
+                                                monacoLoading = false;
+                                                log('Code editor failed to load, using basic editor.', 'err');
+                                              });
                     }
                   }
 
