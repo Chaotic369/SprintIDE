@@ -2693,19 +2693,79 @@
         if (newRepoMode === 'empty' || !initialFiles.length) {
           log('Repository created (empty).');
         } else {
+          log(`Creating blobs for ${initialFiles.length} files...`);
+          const treeEntries = [];
+
           for (let i = 0; i < initialFiles.length; i++) {
             const f = initialFiles[i];
-            log(`Committing ${f.path} (${i + 1}/${initialFiles.length})...`);
-            const targetUrl = ['https:', '', 'api.github.com', 'repos', repoData.full_name, 'contents', f.path.split('/').map(encodeURIComponent).join('/')].join('/');
-            await fetch(targetUrl, {
-              method: 'PUT',
-              headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ message: `Initial commit: ${f.path}`, content: f.b64, branch: 'main' })
+            const blobRes = await fetch(`https://api.github.com/repos/${repoData.full_name}/git/blobs`, {
+              method: 'POST',
+              headers: authHeaders(),
+              body: JSON.stringify({ content: f.b64, encoding: 'base64' })
             });
-            setRepoProgress(40 + Math.round(((i + 1) / initialFiles.length) * 35));
+            if (!blobRes.ok) throw new Error(await blobRes.text());
+            const blobData = await blobRes.json();
+            treeEntries.push({
+              path: f.path,
+              mode: '100644',
+              type: 'blob',
+              sha: blobData.sha
+            });
+            setRepoProgress(40 + Math.round(((i + 1) / initialFiles.length) * 25));
           }
+
+          log('Creating tree...');
+          const treeRes = await fetch(`https://api.github.com/repos/${repoData.full_name}/git/trees`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ tree: treeEntries })
+          });
+          if (!treeRes.ok) throw new Error(await treeRes.text());
+          const treeData = await treeRes.json();
+          setRepoProgress(70);
+
+          let parentCommitSha = null;
+          const refRes = await fetch(`https://api.github.com/repos/${repoData.full_name}/git/refs/heads/main`, {
+            headers: { Authorization: `token ${ghToken}` }
+          });
+          if (refRes.ok) {
+            const refData = await refRes.json();
+            parentCommitSha = refData.object ? refData.object.sha : null;
+          }
+
+          log('Creating atomic commit...');
+          const commitBody = {
+            message: `Initial commit (${initialFiles.length} files) via Sprint IDE`,
+            tree: treeData.sha,
+            parents: parentCommitSha ? [parentCommitSha] : []
+          };
+          const commitRes = await fetch(`https://api.github.com/repos/${repoData.full_name}/git/commits`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify(commitBody)
+          });
+          if (!commitRes.ok) throw new Error(await commitRes.text());
+          const commitData = await commitRes.json();
+          setRepoProgress(80);
+
+          log('Updating main branch ref...');
+          if (parentCommitSha) {
+            const updateRefRes = await fetch(`https://api.github.com/repos/${repoData.full_name}/git/refs/heads/main`, {
+              method: 'PATCH',
+              headers: authHeaders(),
+              body: JSON.stringify({ sha: commitData.sha, force: true })
+            });
+            if (!updateRefRes.ok) throw new Error(await updateRefRes.text());
+          } else {
+            const createRefRes = await fetch(`https://api.github.com/repos/${repoData.full_name}/git/refs`, {
+              method: 'POST',
+              headers: authHeaders(),
+              body: JSON.stringify({ ref: 'refs/heads/main', sha: commitData.sha })
+            });
+            if (!createRefRes.ok) throw new Error(await createRefRes.text());
+          }
+          setRepoProgress(85);
         }
-        setRepoProgress(80);
 
         log('Enabling GitHub Pages...');
         await fetch(`https://api.github.com/repos/${repoData.full_name}/pages`, {
