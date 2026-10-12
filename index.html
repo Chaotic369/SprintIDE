@@ -843,26 +843,31 @@
             body.mobile-mode #code-toolbar::-webkit-scrollbar { display: none; }
             body.mobile-mode #code-toolbar button.mini { height: 22px; padding: 0 6px; font-size: 9.5px; flex-shrink: 0; }
 
-            /* Floating code action buttons in mobile mode - bottom right dock */
+            /* Floating code action buttons in mobile mode - top right of preview/canvas */
                   body.mobile-mode #code-toolbar {
                     position: absolute;
-                    bottom: 12px;
-                    right: 10px;
-                    top: auto;
-                    z-index: 15;
+                    top: 8px;
+                    right: 8px;
+                    bottom: auto;
+                    z-index: 25;
                     display: none;
-                    flex-wrap: wrap;
+                    flex-wrap: nowrap;
                     justify-content: flex-end;
                     gap: 4px;
-                    max-width: calc(100vw - 24px);
-                    background: rgba(20, 20, 20, 0.88);
-                    backdrop-filter: blur(10px);
-                    -webkit-backdrop-filter: blur(10px);
-                    padding: 4px 6px;
+                    max-width: calc(100% - 16px);
+                    overflow-x: auto;
+                    scrollbar-width: none;
+                    background: rgba(15, 15, 15, 0.88);
+                    backdrop-filter: blur(8px);
+                    -webkit-backdrop-filter: blur(8px);
+                    padding: 3px 6px;
                     border-radius: 8px;
                     border: 1px solid rgba(255, 255, 255, 0.12);
-                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75);
+                    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
                     pointer-events: auto;
+                  }
+                  body.mobile-mode #code-toolbar::-webkit-scrollbar {
+                    display: none;
                   }
             body.mobile-mode #main-area:has(#tab-code.active) #code-toolbar,
             body.mobile-mode.is-code-view #code-toolbar {
