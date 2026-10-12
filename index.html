@@ -2290,8 +2290,8 @@ body.mobile-mode #sidebar.collapsed {
               if (currentFile === path) {
                 currentFile = '';
                 sourceContent = '';
-                if (monacoEditor) monacoEditor.setValue('');
                 ui.codeEditor.value = '';
+                updateLineNumbers();
                 ui.mediaViewer.style.display = 'none';
                 renderPreview('');
                 setDirty(false);
@@ -3686,8 +3686,16 @@ body.mobile-mode #sidebar.collapsed {
               updateStatus();
             });
 
+            if (ui.btnCodeSelectAll) {
+              ui.btnCodeSelectAll.addEventListener('click', () => {
+                ui.codeEditor.focus();
+                ui.codeEditor.select();
+                showToast("All code selected");
+              });
+            }
+
             ui.btnCodeCopy.addEventListener('click', () => {
-              const text = (monacoEditor && monacoReady) ? monacoEditor.getValue() : ui.codeEditor.value;
+              const text = ui.codeEditor.value;
               if (!text) {
                 showToast("Editor is empty!");
                 return;
@@ -3703,16 +3711,7 @@ body.mobile-mode #sidebar.collapsed {
               try {
                 const text = await navigator.clipboard.readText();
                 if (!text) return;
-                if (monacoEditor && monacoReady) {
-                  const pos = monacoEditor.getPosition();
-                  monacoEditor.executeEdits('paste-btn', [{
-                    range: new window.monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column),
-                    text: text,
-                    forceMoveMarkers: true
-                  }]);
-                } else {
-                  insertAtCursor(text);
-                }
+                insertAtCursor(text);
                 showToast("Pasted from clipboard!");
               } catch (err) {
                 showToast("Clipboard access denied. Use Ctrl+V", true);
@@ -4014,7 +4013,6 @@ body.mobile-mode #sidebar.collapsed {
         ui.btnToggleSidebar.title = 'Hide Explorer';
         mobileBackdrop.classList.remove('show');
       }
-      if (monacoEditor && monacoReady) monacoEditor.layout();
     }
 
     btnMobile.addEventListener('click', () => { setMobileMode(!isMobileMode(), true); });
