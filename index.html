@@ -942,9 +942,22 @@
       });
 
       if(repos.length > 0) {
-        ui.repoSelect.value = repos[0].full_name;
-        await loadRepo(repos[0].full_name);
-      }
+              let startRepo = repos[0].full_name;
+              try {
+                const savedRepo = localStorage.getItem('sprint_ide_last_repo');
+                if (savedRepo) {
+                  if (!repos.some(r => r.full_name === savedRepo)) {
+                    const extra = document.createElement('option');
+                    extra.value = savedRepo;
+                    extra.textContent = savedRepo.split('/')[1] || savedRepo;
+                    ui.repoSelect.appendChild(extra);
+                  }
+                  startRepo = savedRepo;
+                }
+              } catch (e) { }
+              ui.repoSelect.value = startRepo;
+              await loadRepo(startRepo);
+            }
     } catch (err) {
       log(err.message, 'err');
     }
@@ -956,6 +969,7 @@
 
   async function loadRepo(repoFullName) {
     currentRepo = repoFullName;
+        try { localStorage.setItem('sprint_ide_last_repo', repoFullName); } catch (e) { }
         currentFile = '';
         setDirty(false);
     sourceContent = '';
@@ -978,8 +992,12 @@
       renderFileTree();
       
       // Auto-load index.html if it exists
-      const indexFile = fileTree.find(f => f.path === 'index.html');
-      if (indexFile) await loadFile('index.html');
+      let startFile = 'index.html';
+            try {
+              const savedFile = JSON.parse(localStorage.getItem('sprint_ide_last_file') || 'null');
+              if (savedFile && savedFile.repo === currentRepo && hasPath(savedFile.path) && !isMediaFile(savedFile.path) && BINARY_EXT.indexOf(extOf(savedFile.path)) === -1) startFile = savedFile.path;
+            } catch (e) { }
+            if (hasPath(startFile)) await loadFile(startFile);
       
     } catch (err) {
       log(err.message, 'err');
@@ -1339,6 +1357,7 @@
         renderFileTree();
         renderPreview(sourceContent);
         log(`Loaded ${path}`, 'success');
+                try { localStorage.setItem('sprint_ide_last_file', JSON.stringify({ repo: currentRepo, path: path })); } catch (e) { }
       } catch (err) {
         log(err.message, 'err');
       }
