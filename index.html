@@ -866,108 +866,113 @@
               body.mobile-mode #resize-console { display: none !important; }
               body.mobile-mode #code-editor { font-size: 11px; padding: 6px 8px 24px; }
 
-              /* Mobile toast/flash logs inside preview area */
-                    #mobile-flash-logs {
-                      display: none;
-                      position: absolute;
-                      bottom: 8px;
-                      left: 8px;
-                      right: 8px;
-                      z-index: 99;
-                      pointer-events: none;
-                      flex-direction: column-reverse;
-                      gap: 5px;
-                      align-items: stretch;
-                    }
-                    body.mobile-mode #mobile-flash-logs { display: flex; }
-                    .m-flash-pill {
-                      pointer-events: auto;
-                      position: relative;
-                      overflow: hidden;
-                      display: flex;
-                      align-items: center;
-                      gap: 6px;
-                      padding: 6px 8px 8px;
-                      border-radius: 8px;
-                      font-family: var(--font-code);
-                      font-size: 9.5px;
-                      line-height: 1.3;
-                      backdrop-filter: blur(12px);
-                      -webkit-backdrop-filter: blur(12px);
-                      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75);
-                      animation: mFlashIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
-                      transition: opacity 0.25s ease, transform 0.25s ease;
-                    }
-                    .m-flash-pill.m-fade-out { opacity: 0; transform: translateY(6px); }
-                    .m-flash-pill.log-err {
-                      background: rgba(30, 8, 12, 0.94);
-                      color: #fda4af;
-                      border: 1px solid rgba(244, 63, 94, 0.35);
-                    }
-                    .m-flash-pill.log-info {
-                      background: rgba(14, 16, 22, 0.94);
-                      color: #cbd5e1;
-                      border: 1px solid rgba(255, 255, 255, 0.12);
-                    }
-                    .m-flash-pill.log-success {
-                      background: rgba(28, 20, 8, 0.94);
-                      color: #fde68a;
-                      border: 1px solid rgba(245, 158, 11, 0.35);
-                    }
-                    .m-flash-icon {
-                      flex-shrink: 0;
-                      display: inline-flex;
-                      align-items: center;
-                      justify-content: center;
-                    }
-                    .m-flash-icon .ico { width: 12px; height: 12px; }
-                    .m-flash-pill.log-err .m-flash-icon { color: var(--accent-red); }
-                    .m-flash-pill.log-info .m-flash-icon { color: var(--accent-cyan); }
-                    .m-flash-pill.log-success .m-flash-icon { color: #f59e0b; }
-                    .m-flash-text {
-                      flex: 1;
-                      min-width: 0;
-                      word-break: break-word;
-                      max-height: 40px;
-                      overflow-y: auto;
-                    }
-                    .m-flash-btn {
-                      height: 18px;
-                      padding: 0 6px;
-                      font-size: 8.5px;
-                      border-radius: 4px;
-                      flex-shrink: 0;
-                      border: none;
-                      display: inline-flex;
-                      align-items: center;
-                      gap: 3px;
-                      box-shadow: none;
-                    }
-                    .m-flash-copy {
-                      background: rgba(255, 255, 255, 0.12);
-                      color: #fff;
-                    }
-                    .m-flash-copy:hover { background: rgba(255, 255, 255, 0.2); }
-                    .m-flash-close {
-                      background: transparent;
-                      color: var(--text-sub);
-                      padding: 0 4px;
-                    }
-                    .m-flash-close:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
-                    .m-flash-bar {
-                      position: absolute;
-                      bottom: 0;
-                      left: 0;
-                      height: 2px;
-                      width: 100%;
-                      transform-origin: left;
-                      animation: mFlashTimer linear forwards;
-                    }
-                    .m-flash-pill.log-err .m-flash-bar { background: var(--accent-red); }
-                    .m-flash-pill.log-info .m-flash-bar { background: var(--accent-cyan); }
-                    .m-flash-pill.log-success .m-flash-bar { background: #f59e0b; }
-                    @keyframes mFlashIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-                    @keyframes mFlashTimer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+              /* Mobile toast/flash logs inside preview area - single combined HUD banner */
+                            #mobile-flash-logs {
+                              display: none;
+                              position: absolute;
+                              bottom: 8px;
+                              left: 8px;
+                              right: 8px;
+                              z-index: 99;
+                              pointer-events: none;
+                            }
+                            body.mobile-mode #mobile-flash-logs { display: block; }
+                            .m-flash-box {
+                              pointer-events: auto;
+                              position: relative;
+                              overflow: hidden;
+                              border-radius: 8px;
+                              font-family: var(--font-code);
+                              font-size: 9px;
+                              line-height: 1.35;
+                              background: rgba(14, 16, 22, 0.95);
+                              border: 1px solid rgba(255, 255, 255, 0.12);
+                              backdrop-filter: blur(12px);
+                              -webkit-backdrop-filter: blur(12px);
+                              box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
+                              transition: opacity 0.25s ease, transform 0.25s ease;
+                            }
+                            .m-flash-box.has-err {
+                              background: rgba(26, 8, 12, 0.95);
+                              border-color: rgba(244, 63, 94, 0.4);
+                            }
+                            .m-flash-box.m-fade-out { opacity: 0; transform: translateY(6px); }
+                            .m-flash-header {
+                              display: flex;
+                              align-items: center;
+                              justify-content: space-between;
+                              padding: 3px 6px 3px 8px;
+                              background: rgba(0, 0, 0, 0.35);
+                              border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+                            }
+                            .m-flash-meta {
+                              display: flex;
+                              align-items: center;
+                              gap: 6px;
+                              font-weight: 600;
+                              color: var(--text-muted);
+                            }
+                            .m-flash-dot {
+                              width: 6px;
+                              height: 6px;
+                              border-radius: 50%;
+                              background: var(--accent-cyan);
+                            }
+                            .m-flash-box.has-err .m-flash-dot { background: var(--accent-red); }
+                            .m-flash-actions { display: flex; align-items: center; gap: 4px; }
+                            .m-flash-btn {
+                              height: 18px;
+                              padding: 0 6px;
+                              font-size: 8px;
+                              border-radius: 4px;
+                              flex-shrink: 0;
+                              border: none;
+                              display: inline-flex;
+                              align-items: center;
+                              gap: 3px;
+                              box-shadow: none;
+                            }
+                            .m-flash-copy {
+                              background: rgba(255, 255, 255, 0.12);
+                              color: #fff;
+                            }
+                            .m-flash-copy:hover { background: rgba(255, 255, 255, 0.2); }
+                            .m-flash-close {
+                              background: transparent;
+                              color: var(--text-sub);
+                              padding: 0 4px;
+                            }
+                            .m-flash-close:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+                            .m-flash-stream {
+                              max-height: 58px;
+                              overflow-y: auto;
+                              padding: 4px 8px 6px;
+                              scrollbar-width: thin;
+                            }
+                            .m-flash-line {
+                              display: flex;
+                              gap: 6px;
+                              margin-bottom: 2px;
+                              word-break: break-word;
+                            }
+                            .m-flash-line:last-child { margin-bottom: 0; }
+                            .m-flash-line.log-err { color: #fda4af; }
+                            .m-flash-line.log-info { color: #cbd5e1; }
+                            .m-flash-line.log-success { color: #fde68a; }
+                            .m-flash-time { color: var(--text-sub); flex-shrink: 0; font-size: 8.5px; }
+                            .m-flash-msg { flex: 1; }
+                            .m-flash-bar {
+                              position: absolute;
+                              bottom: 0;
+                              left: 0;
+                              height: 2px;
+                              width: 100%;
+                              background: var(--accent-cyan);
+                              transform-origin: left;
+                              animation: mFlashTimer linear forwards;
+                            }
+                            .m-flash-box.has-err .m-flash-bar { background: var(--accent-red); }
+                            @keyframes mFlashTimer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
         /* Floating code action buttons in mobile mode - shifted bottom-wise */
               body.mobile-mode #code-toolbar {
@@ -1290,62 +1295,86 @@
       if (type === 'err') updateErrCount();
 
       if (isMobileMode()) {
-            const container = document.getElementById('mobile-flash-logs');
-            if (container) {
-              const pill = document.createElement('div');
-              pill.className = `m-flash-pill log-${type}`;
+              const container = document.getElementById('mobile-flash-logs');
+              if (container) {
+                let box = container.querySelector('.m-flash-box');
+                let stream = null;
+                let pbar = null;
+                let countBadge = null;
 
-              const iconWrap = document.createElement('span');
-              iconWrap.className = 'm-flash-icon';
-              const iconPath = type === 'err'
-                ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
-                : (type === 'success' ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>');
-              iconWrap.innerHTML = svgIcon(iconPath, '');
-              pill.appendChild(iconWrap);
+                if (!box) {
+                  box = document.createElement('div');
+                  box.className = 'm-flash-box';
+                  box.innerHTML = `
+                    <div class="m-flash-header">
+                      <div class="m-flash-meta">
+                        <span class="m-flash-dot"></span>
+                        <span class="m-flash-title">Logs (<span class="m-flash-count">1</span>)</span>
+                      </div>
+                      <div class="m-flash-actions">
+                        <button class="m-flash-btn m-flash-copy">
+                          <svg class="ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                          <span>Copy</span>
+                        </button>
+                        <button class="m-flash-btn m-flash-close">
+                          <svg class="ico" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="m-flash-stream"></div>
+                    <div class="m-flash-bar"></div>
+                  `;
+                  container.appendChild(box);
 
-              const txt = document.createElement('div');
-              txt.className = 'm-flash-text';
-              txt.textContent = msg;
-              pill.appendChild(txt);
+                  box.querySelector('.m-flash-copy').onclick = (e) => {
+                    e.stopPropagation();
+                    const errLines = Array.from(box.querySelectorAll('.m-flash-line.log-err .m-flash-msg')).map(el => el.textContent);
+                    const allLines = Array.from(box.querySelectorAll('.m-flash-line .m-flash-msg')).map(el => el.textContent);
+                    const copyVal = errLines.length
+                      ? `I am getting these errors in the preview:\n${errLines.join('\n')}\n\nPlease fix the code.`
+                      : allLines.join('\n');
+                    navigator.clipboard.writeText(copyVal).then(() => {
+                      showToast(errLines.length ? 'Copied error prompt for AI!' : 'Copied logs!');
+                    }).catch(() => showToast('Failed to copy', true));
+                  };
 
-              const btnCopy = document.createElement('button');
-              btnCopy.className = 'm-flash-btn m-flash-copy';
-              btnCopy.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>' + (type === 'err' ? 'Copy Fix' : 'Copy') + '</span>';
-              btnCopy.onclick = (e) => {
-                e.stopPropagation();
-                const copyVal = type === 'err' ? `I am getting this error:\n${msg}\n\nPlease fix this issue in the code.` : msg;
-                navigator.clipboard.writeText(copyVal).then(() => {
-                  showToast(type === 'err' ? 'Copied error prompt for AI!' : 'Copied log!');
-                }).catch(() => {
-                  showToast('Failed to copy', true);
-                });
-              };
-              pill.appendChild(btnCopy);
+                  box.querySelector('.m-flash-close').onclick = (e) => {
+                    e.stopPropagation();
+                    if (box._dismissTimer) clearTimeout(box._dismissTimer);
+                    box.classList.add('m-fade-out');
+                    setTimeout(() => box.remove(), 250);
+                  };
+                }
 
-              const btnClose = document.createElement('button');
-              btnClose.className = 'm-flash-btn m-flash-close';
-              btnClose.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-              const dismiss = () => {
-                pill.classList.add('m-fade-out');
-                setTimeout(() => pill.remove(), 250);
-              };
-              btnClose.onclick = (e) => { e.stopPropagation(); dismiss(); };
-              pill.appendChild(btnClose);
+                stream = box.querySelector('.m-flash-stream');
+                pbar = box.querySelector('.m-flash-bar');
+                countBadge = box.querySelector('.m-flash-count');
 
-              const duration = type === 'err' ? 6000 : 3500;
-              const progress = document.createElement('div');
-              progress.className = 'm-flash-bar';
-              progress.style.animationDuration = duration + 'ms';
-              pill.appendChild(progress);
+                if (type === 'err') box.classList.add('has-err');
 
-              container.appendChild(pill);
-              while (container.children.length > 2) {
-                container.removeChild(container.firstChild);
+                const line = document.createElement('div');
+                line.className = `m-flash-line log-${type}`;
+                line.innerHTML = `<span class="m-flash-time">${new Date().toLocaleTimeString()}</span><span class="m-flash-msg">${msg}</span>`;
+                stream.appendChild(line);
+
+                while (stream.children.length > 5) {
+                  stream.removeChild(stream.firstChild);
+                }
+                stream.scrollTop = stream.scrollHeight;
+                if (countBadge) countBadge.textContent = stream.children.length;
+
+                const duration = box.classList.contains('has-err') ? 6000 : 3500;
+                pbar.style.animation = 'none';
+                void pbar.offsetWidth;
+                pbar.style.animation = `mFlashTimer ${duration}ms linear forwards`;
+
+                if (box._dismissTimer) clearTimeout(box._dismissTimer);
+                box._dismissTimer = setTimeout(() => {
+                  box.classList.add('m-fade-out');
+                  setTimeout(() => box.remove(), 250);
+                }, duration);
               }
-
-              setTimeout(dismiss, duration);
             }
-          }
     }
 
       function updateErrCount() {
