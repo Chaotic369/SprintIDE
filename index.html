@@ -326,8 +326,15 @@
             #console-header { position: absolute; top: 6px; right: 12px; z-index: 5; padding: 0; background: transparent; height: auto; pointer-events: none; }
             #console-header > span { display: none; }
             #console-header .console-actions { pointer-events: auto; gap: 6px; }
-            #console-header .console-actions button { background: #1c1c1c; }
-            #console-header .console-actions button:hover:not(:disabled) { background: #2a2a2a; }
+            #console-header .console-actions button { background: transparent; box-shadow: none; }
+              #console-header .console-actions button:hover:not(:disabled) { background: transparent; color: #f59e0b; box-shadow: none; }
+
+                /* ===== Terminal: remove remaining boxes and lines ===== */
+                html body #console-panel { border: none !important; border-top: none !important; box-shadow: none !important; }
+                html body #console-panel #console-header { background: transparent !important; border: none !important; border-bottom: none !important; box-shadow: none !important; min-height: 0 !important; width: auto !important; }
+                html body #console-panel #console-header .console-actions button, html body #console-panel #console-header .console-actions button:hover:not(:disabled), html body #console-panel #console-header .console-actions button:active:not(:disabled), html body #console-panel #console-header .console-actions button:focus { background: transparent !important; border: none !important; box-shadow: none !important; outline: none !important; transform: none !important; }
+                html body #console-panel #console-header .console-actions button { color: var(--text-sub); padding: 0 6px; height: 22px; }
+                html body #console-panel #console-header .console-actions button:hover:not(:disabled) { color: #f59e0b !important; }
             #console-logs { padding-top: 8px; padding-right: 220px; }
   .watermark { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2; background: var(--bg-dark); font-size: 12.5px; color: var(--text-sub); pointer-events: none; text-align: center; line-height: 1.5; padding: 20px; }
   #sidebar.collapsed { display: none; }
