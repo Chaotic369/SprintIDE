@@ -1406,6 +1406,32 @@
   </div>
 </div>
 
+<div id="new-repo-modal" style="position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);">
+  <div style="position:relative;width:90%;max-width:440px;padding:24px 22px 20px;background:#111111;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.85);display:flex;flex-direction:column;gap:14px;">
+    <div style="font-size:14.5px;font-weight:700;color:#ffffff;">Create New Repository</div>
+    <input id="new-repo-name" type="text" placeholder="Repository name (e.g. my-app)" autocomplete="off" spellcheck="false" style="height:36px;padding:0 12px;background:#1c1c1c;color:#ffffff;border:none;border-radius:10px;font-family:var(--font-code);font-size:12px;">
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label style="font-size:11.5px;color:var(--text-sub);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Initial Content</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <button type="button" class="new-repo-opt active" data-type="empty" style="justify-content:center;height:32px;background:#2a2a2a;color:#fff;">Empty Repo</button>
+        <button type="button" class="new-repo-opt" data-type="paste" style="justify-content:center;height:32px;background:#1c1c1c;color:var(--text-muted);">Paste HTML</button>
+        <button type="button" class="new-repo-opt" data-type="upload-html" style="justify-content:center;height:32px;background:#1c1c1c;color:var(--text-muted);">Upload HTML</button>
+        <button type="button" class="new-repo-opt" data-type="upload-file" style="justify-content:center;height:32px;background:#1c1c1c;color:var(--text-muted);">Upload File</button>
+      </div>
+    </div>
+    <div id="new-repo-paste-box" style="display:none;flex-direction:column;gap:6px;">
+      <textarea id="new-repo-paste-content" placeholder="Paste full HTML here..." spellcheck="false" style="height:90px;padding:8px 10px;background:#1c1c1c;color:#ffffff;border:none;border-radius:10px;font-family:var(--font-code);font-size:11.5px;resize:none;outline:none;"></textarea>
+    </div>
+    <div id="new-repo-file-box" style="display:none;flex-direction:column;gap:6px;">
+      <input type="file" id="new-repo-file-input" style="font-size:11.5px;color:var(--text-muted);">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+      <button type="button" id="new-repo-cancel">Cancel</button>
+      <button type="button" id="new-repo-submit" class="primary">Create</button>
+    </div>
+  </div>
+</div>
+
 <div id="modal-overlay">
   <div id="modal-box">
     <div id="modal-title"><svg class="ico" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Confirm Deletion</div>
@@ -2445,10 +2471,95 @@
     }
 
     // Quick Repo Creation
-    ui.btnNewRepo.addEventListener('click', async () => {
-      const repoName = await uiPrompt('New repository', 'Enter a name for the new repository.', '', 'sprint-app-1');
-      if (!repoName) return;
-    
+    const newRepoModal = document.getElementById('new-repo-modal');
+    const newRepoNameInput = document.getElementById('new-repo-name');
+    const newRepoPasteBox = document.getElementById('new-repo-paste-box');
+    const newRepoPasteContent = document.getElementById('new-repo-paste-content');
+    const newRepoFileBox = document.getElementById('new-repo-file-box');
+    const newRepoFileInput = document.getElementById('new-repo-file-input');
+    const newRepoCancelBtn = document.getElementById('new-repo-cancel');
+    const newRepoSubmitBtn = document.getElementById('new-repo-submit');
+    const newRepoOptBtns = document.querySelectorAll('.new-repo-opt');
+    let newRepoMode = 'empty';
+
+    function openNewRepoModal() {
+      newRepoNameInput.value = '';
+      newRepoPasteContent.value = '';
+      newRepoFileInput.value = '';
+      setNewRepoMode('empty');
+      newRepoModal.style.display = 'flex';
+      setTimeout(() => newRepoNameInput.focus(), 30);
+    }
+
+    function closeNewRepoModal() {
+      newRepoModal.style.display = 'none';
+    }
+
+    function setNewRepoMode(mode) {
+      newRepoMode = mode;
+      newRepoOptBtns.forEach(btn => {
+        const active = btn.getAttribute('data-type') === mode;
+        btn.classList.toggle('active', active);
+        btn.style.background = active ? '#2a2a2a' : '#1c1c1c';
+        btn.style.color = active ? '#fff' : 'var(--text-muted)';
+      });
+      newRepoPasteBox.style.display = mode === 'paste' ? 'flex' : 'none';
+      newRepoFileBox.style.display = (mode === 'upload-html' || mode === 'upload-file') ? 'flex' : 'none';
+      if (mode === 'upload-html') {
+        newRepoFileInput.accept = '.html,.htm';
+      } else {
+        newRepoFileInput.removeAttribute('accept');
+      }
+    }
+
+    newRepoOptBtns.forEach(btn => {
+      btn.addEventListener('click', () => setNewRepoMode(btn.getAttribute('data-type')));
+    });
+
+    newRepoCancelBtn.addEventListener('click', closeNewRepoModal);
+    newRepoModal.addEventListener('mousedown', (e) => {
+      if (e.target === newRepoModal) closeNewRepoModal();
+    });
+
+    newRepoSubmitBtn.addEventListener('click', async () => {
+      const repoName = newRepoNameInput.value.trim();
+      if (!repoName) {
+        showToast('Please enter a repository name', true);
+        newRepoNameInput.focus();
+        return;
+      }
+
+      let initialFileName = '';
+      let initialB64 = '';
+
+      if (newRepoMode === 'paste') {
+        const pasted = newRepoPasteContent.value.trim();
+        if (!pasted) {
+          showToast('Please paste HTML content', true);
+          newRepoPasteContent.focus();
+          return;
+        }
+        initialFileName = 'index.html';
+        initialB64 = unicodeToBase64(pasted);
+      } else if (newRepoMode === 'upload-html' || newRepoMode === 'upload-file') {
+        const file = newRepoFileInput.files && newRepoFileInput.files[0];
+        if (!file) {
+          showToast('Please choose a file to upload', true);
+          return;
+        }
+        initialFileName = (newRepoMode === 'upload-html' && !file.name.toLowerCase().endsWith('.html') && !file.name.toLowerCase().endsWith('.htm'))
+          ? 'index.html'
+          : file.name;
+        try {
+          initialB64 = await fileToBase64(file);
+        } catch (err) {
+          showToast('Failed to read file', true);
+          return;
+        }
+      }
+
+      closeNewRepoModal();
+
       try {
         setRepoProgress(15);
         log(`Creating repository: ${repoName}...`);
@@ -2460,14 +2571,17 @@
         if (!res.ok) throw new Error(await res.text());
         const repoData = await res.json();
         setRepoProgress(50);
-      
-        log('Committing base index.html...');
-        const baseContent = unicodeToBase64("<!DOCTYPE html>\n<html>\n<head>\n<title>Vibe App</title>\n</head>\n<body>\n  <h1>Hello Vibe!</h1>\n</body>\n</html>");
-        await fetch(`https://api.github.com/repos/${repoData.full_name}/contents/index.html`, {
-          method: 'PUT',
-          headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: "Initial commit", content: baseContent, branch: "main" })
-        });
+
+        if (newRepoMode === 'empty') {
+          log('Repository created (empty).');
+        } else {
+          log(`Committing ${initialFileName}...`);
+          await fetch(`https://api.github.com/repos/${repoData.full_name}/contents/${initialFileName}`, {
+            method: 'PUT',
+            headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: `Initial commit: ${initialFileName}`, content: initialB64, branch: 'main' })
+          });
+        }
         setRepoProgress(75);
 
         log('Enabling GitHub Pages...');
@@ -2475,7 +2589,7 @@
           method: 'POST',
           headers: { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ source: { branch: 'main', path: '/' } })
-        });
+        }).catch(() => {});
         setRepoProgress(100);
 
         showToast("Repository created successfully!");
@@ -2489,6 +2603,8 @@
         showToast("Error creating repo", true);
       }
     });
+
+    ui.btnNewRepo.addEventListener('click', openNewRepoModal);
 
   // Push to Live (Commit)
   ui.btnPush.addEventListener('click', async () => {
