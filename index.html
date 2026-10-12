@@ -8,24 +8,24 @@
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
   :root {
-    --bg-dark: #0d1017;
-        --bg-panel: #11141b;
-        --bg-header: #0a0c11;
-        --bg-elevated: #181c25;
+    --bg-dark: #0a0a0a;
+        --bg-panel: #111111;
+        --bg-header: #0c0c0c;
+        --bg-elevated: #1a1a1a;
     --bg-hover: rgba(255, 255, 255, 0.05);
-    --bg-active: rgba(99, 102, 241, 0.15);
-    --accent-blue: #6366f1;
-    --accent-cyan: #06b6d4;
-    --accent-green: #10b981;
-    --accent-red: #f43f5e;
-    --accent-purple: #8b5cf6;
-    --accent-yellow: #f59e0b;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --text-sub: #64748b;
-    --border: rgba(255, 255, 255, 0.08);
-    --border-focus: rgba(99, 102, 241, 0.5);
-    --glow-blue: 0 0 20px rgba(99, 102, 241, 0.35);
+        --bg-active: rgba(255, 255, 255, 0.08);
+        --accent-blue: #a1a1aa;
+        --accent-cyan: #d4d4d8;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-purple: #71717a;
+        --accent-yellow: #f59e0b;
+        --text-main: #f5f5f5;
+        --text-muted: #a3a3a3;
+        --text-sub: #737373;
+        --border: rgba(255, 255, 255, 0.08);
+        --border-focus: rgba(255, 255, 255, 0.3);
+        --glow-blue: 0 0 20px rgba(255, 255, 255, 0.12);
     --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-code: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   }
@@ -429,6 +429,24 @@
 
     #toast { background: var(--bg-elevated); border-radius: 8px; bottom: 36px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
     #modal-box { background: var(--bg-elevated); border-radius: 12px; }
+
+      /* ===== Black / grey theme overrides ===== */
+      button.primary { background: #f59e0b; color: #1a1100; border: 1px solid #f59e0b; font-weight: 600; box-shadow: none; }
+        button.primary:hover:not(:disabled) { background: #fbbf24; color: #1a1100; border-color: #fbbf24; box-shadow: none; }
+        button.ai-btn { background: #f59e0b; color: #1a1100; border: 1px solid #f59e0b; box-shadow: none; }
+        button.ai-btn:hover:not(:disabled) { background: #fbbf24; color: #1a1100; border-color: #fbbf24; box-shadow: none; filter: none; }
+
+      select:focus { border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08); }
+      #ai-instruction:focus { border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08); }
+
+      .file-item.active { background: rgba(255, 255, 255, 0.07); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05); }
+      #file-tree.drop-over { background: rgba(255, 255, 255, 0.04); }
+
+      #login-screen { background: radial-gradient(circle at top center, #1f1f1f 0%, #0a0a0a 65%); }
+      #login-screen .login-logo { filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.25)); }
+
+      #code-editor { color: #e5e5e5; }
+      #console-logs { color: #d4d4d4; }
   </style>
 </head>
 <body>
@@ -1531,18 +1549,18 @@
                                                     { token: 'delimiter', foreground: '8892a6' }
                                                   ],
                                                   colors: {
-                                                    'editor.background': '#0d1017',
-                                                    'editor.foreground': '#d6deeb',
-                                                    'editorGutter.background': '#0d1017',
+                                                    'editor.background': '#0a0a0a',
+                                                    'editor.foreground': '#d4d4d4',
+                                                    'editorGutter.background': '#0a0a0a',
                                                     'editor.lineHighlightBackground': '#ffffff08',
                                                     'editor.lineHighlightBorder': '#00000000',
-                                                    'editor.selectionBackground': '#6366f144',
-                                                    'editorLineNumber.foreground': '#3b4252',
-                                                    'editorLineNumber.activeForeground': '#94a3b8',
-                                                    'editorCursor.foreground': '#818cf8',
+                                                    'editor.selectionBackground': '#ffffff22',
+                                                    'editorLineNumber.foreground': '#404040',
+                                                    'editorLineNumber.activeForeground': '#a3a3a3',
+                                                    'editorCursor.foreground': '#e5e5e5',
                                                     'editorIndentGuide.background1': '#ffffff0d',
                                                     'editorIndentGuide.activeBackground1': '#ffffff22',
-                                                    'editorWidget.background': '#161a23',
+                                                    'editorWidget.background': '#141414',
                                                     'editorWidget.border': '#ffffff14',
                                                     'scrollbarSlider.background': '#ffffff14',
                                                     'scrollbarSlider.hoverBackground': '#ffffff26'
