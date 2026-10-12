@@ -805,8 +805,9 @@
         #btn-mobile-toggle { padding: 0 6px; }
         #btn-mobile-toggle.active { background: #f59e0b; color: #1a1100; }
         body.mobile-mode #mobile-backdrop.show { display: block; }
-        body.mobile-mode, body.mobile-mode #app-layout { height: 100vh; height: 100dvh; }
-        body.mobile-mode #header { height: 30px; margin: 2px 4px; padding: 0 4px; gap: 3px; border-radius: 8px; }
+        body.mobile-mode, body.mobile-mode #app-layout { height: 100vh; height: 100dvh; justify-content: flex-end; }
+        body.mobile-mode #header { order: 2; margin-top: auto; margin-bottom: 4px; height: 30px; margin: 2px 4px 4px; padding: 0 4px; gap: 3px; border-radius: 8px; }
+        body.mobile-mode #workspace { order: 1; flex: 1; min-height: 0; }
         body.mobile-mode .brand-tag, body.mobile-mode #user-display, body.mobile-mode #btn-fullscreen-ide, body.mobile-mode #resize-sidebar, body.mobile-mode #resize-console, body.mobile-mode #editor-hint { display: none !important; }
         body.mobile-mode #header .header-group:first-of-type { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; gap: 3px; }
         body.mobile-mode #header .header-group:last-of-type { flex-shrink: 0; gap: 3px; }
@@ -844,28 +845,28 @@
         body.mobile-mode #console-logs { padding: 3px 6px; font-size: 9px; padding-right: 55px; }
         body.mobile-mode #code-editor { font-size: 11px; padding: 6px 8px 24px; }
 
-        /* Floating code action buttons in mobile mode - top right without wrapped card bg */
-        body.mobile-mode #code-toolbar {
-          position: absolute;
-          top: 6px;
-          right: 6px;
-          bottom: auto;
-          z-index: 25;
-          display: none;
-          flex-wrap: nowrap;
-          justify-content: flex-end;
-          gap: 3px;
-          max-width: calc(100% - 12px);
-          overflow-x: auto;
-          scrollbar-width: none;
-          background: transparent !important;
-          backdrop-filter: none !important;
-          -webkit-backdrop-filter: none !important;
-          padding: 0 !important;
-          border: none !important;
-          box-shadow: none !important;
-          pointer-events: auto;
-        }
+        /* Floating code action buttons in mobile mode - shifted bottom-wise */
+              body.mobile-mode #code-toolbar {
+                position: absolute;
+                bottom: 8px;
+                right: 6px;
+                top: auto;
+                z-index: 25;
+                display: none;
+                flex-wrap: nowrap;
+                justify-content: flex-end;
+                gap: 3px;
+                max-width: calc(100% - 12px);
+                overflow-x: auto;
+                scrollbar-width: none;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                pointer-events: auto;
+              }
         body.mobile-mode #code-toolbar::-webkit-scrollbar {
           display: none;
         }
