@@ -2561,32 +2561,42 @@
                     }
 
                     async function doUndo() {
-                      if (deletedFileUndoHistory) {
-                        const toRestore = deletedFileUndoHistory;
-                        deletedFileUndoHistory = null;
-                        log('Restoring deleted file ' + toRestore.path + '...');
-                        try {
-                          await putFile(toRestore.path, toRestore.content, 'Restore ' + toRestore.path + ' via Sprint IDE undo');
-                          fileTree.push({ path: toRestore.path, type: 'blob' });
-                          fileTree.sort((a, b) => a.path.localeCompare(b.path));
-                          renderFileTree();
-                          await loadFile(toRestore.path);
-                          showToast('Restored deleted file "' + baseName(toRestore.path) + '"!');
-                          return;
-                        } catch (err) {
-                          log('Undo delete error: ' + err.message, 'err');
-                          showToast("Failed to restore deleted file", true);
-                        }
-                      }
-                      histCommit();
-                                            if (!undoStack.length) return;
-                      redoStack.push(sourceContent);
-                      applyHist(undoStack.pop());
-                    }
-
-                    function doRedo() {
+                                          if (deletedFileUndoHistory) {
+                                            const toRestore = deletedFileUndoHistory;
+                                            deletedFileUndoHistory = null;
+                                            log('Restoring deleted file ' + toRestore.path + '...');
+                                            try {
+                                              await putFile(toRestore.path, toRestore.content, 'Restore ' + toRestore.path + ' via Sprint IDE undo');
+                                              fileTree.push({ path: toRestore.path, type: 'blob' });
+                                              fileTree.sort((a, b) => a.path.localeCompare(b.path));
+                                              renderFileTree();
+                                              await loadFile(toRestore.path);
+                                              showToast('Restored deleted file "' + baseName(toRestore.path) + '"!');
+                                              return;
+                                            } catch (err) {
+                                              log('Undo delete error: ' + err.message, 'err');
+                                              showToast("Failed to restore deleted file", true);
+                                            }
+                                          }
+                                          if (ui.tabCode.classList.contains('active') && monacoEditor && monacoReady) {
+                                            monacoEditor.trigger('header-btn', 'undo', null);
+                                            monacoEditor.focus();
+                                            return;
+                                          }
                                           histCommit();
-                                                                                    if (!redoStack.length) return;
+                                          if (!undoStack.length) return;
+                                          redoStack.push(sourceContent);
+                                          applyHist(undoStack.pop());
+                                        }
+
+                                        function doRedo() {
+                                          if (ui.tabCode.classList.contains('active') && monacoEditor && monacoReady) {
+                                            monacoEditor.trigger('header-btn', 'redo', null);
+                                            monacoEditor.focus();
+                                            return;
+                                          }
+                                          histCommit();
+                                          if (!redoStack.length) return;
                                           undoStack.push(sourceContent);
                                           applyHist(redoStack.pop());
                                         }
