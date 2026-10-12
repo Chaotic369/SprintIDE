@@ -1557,9 +1557,6 @@ body.mobile-mode #sidebar.collapsed {
         const expandedDirs = new Set();
 
   // State
-    let monacoEditor = null;
-    let monacoReady = false;
-        let monacoLoading = false;
     let deletedFileUndoHistory = null;
 
     // DOM Elements
@@ -1593,7 +1590,8 @@ body.mobile-mode #sidebar.collapsed {
           fileUpload: document.getElementById('file-upload'),
       tabPreview: document.getElementById('tab-preview'),
       tabCode: document.getElementById('tab-code'),
-      monacoContainer: document.getElementById('monaco-container'),
+      codeWrapper: document.getElementById('code-wrapper'),
+      lineNumbers: document.getElementById('line-numbers'),
       codeEditor: document.getElementById('code-editor'),
       previewFrame: document.getElementById('preview-frame'),
       mediaViewer: document.getElementById('media-viewer'),
@@ -2274,7 +2272,7 @@ body.mobile-mode #sidebar.collapsed {
               }
               ui.mediaViewer.style.display = 'flex';
               ui.previewFrame.style.display = 'none';
-              ui.monacoContainer.style.display = 'none';
+              if (ui.codeWrapper) ui.codeWrapper.style.display = 'none';
               ui.codeEditor.style.display = 'none';
               ui.codeToolbar.style.display = 'none';
               ui.editorStatus.style.display = 'none';
@@ -2529,14 +2527,8 @@ body.mobile-mode #sidebar.collapsed {
               expandParents(path);
               setDirty(false);
         ui.codeEditor.value = sourceContent;
-        if (monacoEditor && monacoReady) {
-          const model = monacoEditor.getModel();
-          if (model) {
-            window.monaco.editor.setModelLanguage(model, getMonacoLanguage(path));
-            monacoEditor.setValue(sourceContent);
-          }
-        }
-        ui.btnPush.disabled = false;
+    updateLineNumbers();
+    ui.btnPush.disabled = false;
       
         renderFileTree();
         renderPreview(sourceContent);
@@ -3040,175 +3032,67 @@ body.mobile-mode #sidebar.collapsed {
           }
 
           function applyHist(text) {
-                      sourceContent = text;
-                      lastSnap = text;
-                      ui.codeEditor.value = text;
-                      if (monacoEditor && monacoReady && monacoEditor.getValue() !== text) {
-                                              const viewState = monacoEditor.saveViewState();
-                                              monacoEditor.setValue(text);
-                                              if (viewState) monacoEditor.restoreViewState(viewState);
-                                            }
-                      if (ui.tabPreview.classList.contains('active')) renderPreview(text); else previewStale = true;
-                      if (currentFile) ui.btnPush.disabled = false;
-                      setDirty(true);
-                      updateHistUI();
-                      updateStatus();
-                    }
+    sourceContent = text;
+    lastSnap = text;
+    ui.codeEditor.value = text;
+    updateLineNumbers();
+    if (ui.tabPreview.classList.contains('active')) renderPreview(text); else previewStale = true;
+    if (currentFile) ui.btnPush.disabled = false;
+    setDirty(true);
+    updateHistUI();
+    updateStatus();
+  }
 
                     async function doUndo() {
-                                          if (deletedFileUndoHistory) {
-                                            const toRestore = deletedFileUndoHistory;
-                                            deletedFileUndoHistory = null;
-                                            log('Restoring deleted file ' + toRestore.path + '...');
-                                            try {
-                                              await putFile(toRestore.path, toRestore.content, 'Restore ' + toRestore.path + ' via Sprint IDE undo');
-                                              fileTree.push({ path: toRestore.path, type: 'blob' });
-                                              fileTree.sort((a, b) => a.path.localeCompare(b.path));
-                                              renderFileTree();
-                                              await loadFile(toRestore.path);
-                                              showToast('Restored deleted file "' + baseName(toRestore.path) + '"!');
-                                              return;
-                                            } catch (err) {
-                                              log('Undo delete error: ' + err.message, 'err');
-                                              showToast("Failed to restore deleted file", true);
-                                            }
-                                          }
-                                          if (ui.tabCode.classList.contains('active') && monacoEditor && monacoReady) {
-                                            monacoEditor.trigger('header-btn', 'undo', null);
-                                            monacoEditor.focus();
-                                            return;
-                                          }
-                                          histCommit();
-                                          if (!undoStack.length) return;
-                                          redoStack.push(sourceContent);
-                                          applyHist(undoStack.pop());
-                                        }
+    if (deletedFileUndoHistory) {
+      const toRestore = deletedFileUndoHistory;
+      deletedFileUndoHistory = null;
+      log('Restoring deleted file ' + toRestore.path + '...');
+      try {
+        await putFile(toRestore.path, toRestore.content, 'Restore ' + toRestore.path + ' via Sprint IDE undo');
+        fileTree.push({ path: toRestore.path, type: 'blob' });
+        fileTree.sort((a, b) => a.path.localeCompare(b.path));
+        renderFileTree();
+        await loadFile(toRestore.path);
+        showToast('Restored deleted file "' + baseName(toRestore.path) + '"!');
+        return;
+      } catch (err) {
+        log('Undo delete error: ' + err.message, 'err');
+        showToast("Failed to restore deleted file", true);
+      }
+    }
+    histCommit();
+    if (!undoStack.length) return;
+    redoStack.push(sourceContent);
+    applyHist(undoStack.pop());
+  }
 
-                                        function doRedo() {
-                                          if (ui.tabCode.classList.contains('active') && monacoEditor && monacoReady) {
-                                            monacoEditor.trigger('header-btn', 'redo', null);
-                                            monacoEditor.focus();
-                                            return;
-                                          }
-                                          histCommit();
-                                          if (!redoStack.length) return;
-                                          undoStack.push(sourceContent);
-                                          applyHist(redoStack.pop());
-                                        }
+  function doRedo() {
+    histCommit();
+    if (!redoStack.length) return;
+    undoStack.push(sourceContent);
+    applyHist(redoStack.pop());
+  }
 
-                    function updateStatus() {
-                    if (monacoEditor && monacoReady) {
-                      const pos = monacoEditor.getPosition() || { lineNumber: 1, column: 1 };
-                      const lineCount = monacoEditor.getModel() ? monacoEditor.getModel().getLineCount() : 1;
-                      ui.statusPos.textContent = 'Ln ' + pos.lineNumber + ', Col ' + pos.column + ' | ' + lineCount + ' lines';
-                      return;
-                    }
-                    const ta = ui.codeEditor;
-                    const before = ta.value.slice(0, ta.selectionStart);
-                    const line = before.split('\n').length;
-                    const col = before.length - before.lastIndexOf('\n');
-                    const total = ta.value.split('\n').length;
-                    ui.statusPos.textContent = 'Ln ' + line + ', Col ' + col + ' | ' + total + ' lines';
-                  }
+  function updateLineNumbers() {
+    if (!ui.lineNumbers || !ui.codeEditor) return;
+    const lines = ui.codeEditor.value.split('\n').length;
+    let nums = '';
+    for (let i = 1; i <= lines; i++) {
+      nums += i + '\n';
+    }
+    ui.lineNumbers.textContent = nums;
+  }
 
-                  function initMonaco() {
-                    if (!window.require && !monacoEditor) {
-                                          if (ui.tabCode.classList.contains('active')) setTimeout(initMonaco, 300);
-                                          return;
-                                        }
-                                        if (window.require && !monacoEditor && !monacoLoading) {
-                                          monacoLoading = true;
-                      window.require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
-                      window.require(['vs/editor/editor.main'], function () {
-                        window.monaco.editor.defineTheme('sprint-dark', {
-                                                  base: 'vs-dark',
-                                                  inherit: true,
-                                                  rules: [
-                                                    { token: 'comment', foreground: '5c6773', fontStyle: 'italic' },
-                                                    { token: 'keyword', foreground: 'c792ea' },
-                                                    { token: 'string', foreground: 'a5e075' },
-                                                    { token: 'number', foreground: 'f78c6c' },
-                                                    { token: 'type', foreground: '67e8f9' },
-                                                    { token: 'tag', foreground: 'f07178' },
-                                                    { token: 'attribute.name', foreground: 'ffcb6b' },
-                                                    { token: 'attribute.value', foreground: 'a5e075' },
-                                                    { token: 'delimiter', foreground: '8892a6' }
-                                                  ],
-                                                  colors: {
-                                                    'editor.background': '#000000',
-                                                    'editor.foreground': '#d4d4d4',
-                                                    'editorGutter.background': '#000000',
-                                                    'editor.lineHighlightBackground': '#ffffff08',
-                                                    'editor.lineHighlightBorder': '#00000000',
-                                                    'editor.selectionBackground': '#ffffff22',
-                                                    'editorLineNumber.foreground': '#404040',
-                                                    'editorLineNumber.activeForeground': '#a3a3a3',
-                                                    'editorCursor.foreground': '#e5e5e5',
-                                                    'editorIndentGuide.background1': '#ffffff0d',
-                                                    'editorIndentGuide.activeBackground1': '#ffffff22',
-                                                    'editorWidget.background': '#141414',
-                                                    'editorWidget.border': '#ffffff14',
-                                                    'scrollbarSlider.background': '#ffffff14',
-                                                    'scrollbarSlider.hoverBackground': '#ffffff26'
-                                                  }
-                                                });
-                                                monacoEditor = window.monaco.editor.create(ui.monacoContainer, {
-                          value: sourceContent || '',
-                          language: currentFile ? getMonacoLanguage(currentFile) : 'html',
-                          theme: 'sprint-dark',
-                          automaticLayout: true,
-                          fontSize: 13,
-                                                    fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
-                                                    fontLigatures: true,
-                                                    lineHeight: 21,
-                                                    padding: { top: 12, bottom: 34 },
-                                                    smoothScrolling: true,
-                                                    cursorBlinking: 'smooth',
-                                                    cursorSmoothCaretAnimation: 'on',
-                                                    renderLineHighlight: 'all',
-                                                    roundedSelection: true,
-                                                                              guides: { indentation: true, highlightActiveIndentation: true },
-                                                                              scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10, useShadows: false },
-                                                    scrollBeyondLastLine: false,
-                                                    overviewRulerBorder: false,
-                                                    bracketPairColorization: { enabled: true },
-                          tabSize: 2,
-                          minimap: { enabled: false }
-                        });
-                        monacoReady = true;
-                                                const KM = window.monaco.KeyMod;
-                                                const KC = window.monaco.KeyCode;
-                                                monacoEditor.addCommand(KM.CtrlCmd | KC.KeyZ, () => { doUndo().catch((err) => log(err.message, 'err')); });
-                                                monacoEditor.addCommand(KM.CtrlCmd | KC.KeyY, () => { doRedo(); });
-                                                monacoEditor.addCommand(KM.CtrlCmd | KM.Shift | KC.KeyZ, () => { doRedo(); });
-                        monacoEditor.onDidChangeModelContent(() => {
-                          sourceContent = monacoEditor.getValue();
-                          ui.codeEditor.value = sourceContent;
-                          previewStale = true;
-                          if (currentFile) ui.btnPush.disabled = false;
-                          if (sourceContent) ui.watermark.style.display = 'none';
-                          clearTimeout(typingTimer);
-                          typingTimer = setTimeout(histCommit, 500);
-                          updateHistUI();
-                          setDirty(true);
-                          updateStatus();
-                        });
-                        monacoEditor.onDidChangeCursorPosition(updateStatus);
-                                                if (ui.tabCode.classList.contains('active')) {
-                                                  ui.monacoContainer.style.display = 'block';
-                                                  ui.codeEditor.style.display = 'none';
-                                                  const readyModel = monacoEditor.getModel();
-                                                  if (readyModel && currentFile) window.monaco.editor.setModelLanguage(readyModel, getMonacoLanguage(currentFile));
-                                                  monacoEditor.setValue(sourceContent);
-                                                  monacoEditor.layout();
-                                                  updateStatus();
-                                                }
-                                              }, function () {
-                                                monacoLoading = false;
-                                                log('Code editor failed to load, using basic editor.', 'err');
-                                              });
-                    }
-                  }
+  function updateStatus() {
+    const ta = ui.codeEditor;
+    const before = ta.value.slice(0, ta.selectionStart);
+    const line = before.split('\n').length;
+    const col = before.length - before.lastIndexOf('\n');
+    const total = ta.value.split('\n').length;
+    ui.statusPos.textContent = 'Ln ' + line + ', Col ' + col + ' | ' + total + ' lines';
+    updateLineNumbers();
+  }
 
         ui.codeEditor.addEventListener('input', () => {
           sourceContent = ui.codeEditor.value;
