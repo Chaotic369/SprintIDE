@@ -8,8 +8,8 @@
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
   :root {
-    --bg-dark: #0a0a0a;
-        --bg-panel: #111111;
+    --bg-dark: #000000;
+        --bg-panel: #000000;
         --bg-header: #0c0c0c;
         --bg-elevated: #1a1a1a;
     --bg-hover: rgba(255, 255, 255, 0.05);
@@ -444,7 +444,7 @@
       .file-item.active { background: rgba(255, 255, 255, 0.07); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05); }
       #file-tree.drop-over { background: rgba(255, 255, 255, 0.04); }
 
-      #login-screen { background: radial-gradient(circle at top center, #1f1f1f 0%, #0a0a0a 65%); }
+      #login-screen { background: radial-gradient(circle at top center, #1f1f1f 0%, #000000 65%); }
       #login-screen .login-logo { filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.25)); }
 
       #code-editor { color: #e5e5e5; }
@@ -457,6 +457,45 @@
         .tab-btn.active { border-bottom-color: transparent; }
         .resizer.v, .resizer.h { background: transparent; }
         .resizer:hover, .resizer.dragging { background: var(--accent-blue); box-shadow: none; }
+
+          /* ===== Pure black large areas ===== */
+          body, #app-layout, #workspace, #main-area, #view-container, #sidebar, #file-tree, #ai-bar, #console-panel, #console-logs, #code-editor, #monaco-container, #media-viewer, .watermark { background: #000000; }
+          #ai-instruction, select { background: #111111; }
+
+            /* ===== Curved / rounded overrides ===== */
+            #workspace { padding: 0 8px 8px 8px; }
+            #main-area { border-radius: 14px; overflow: hidden; }
+            #sidebar { border-radius: 14px; overflow: hidden; }
+            #view-container.pseudo-full, #view-container:fullscreen { border-radius: 0; }
+
+            button { border-radius: 8px; }
+            button.mini { border-radius: 6px; }
+            button.icon-btn { border-radius: 8px; }
+            button.ai-btn { border-radius: 999px; padding: 4px 12px; }
+            #btn-new-repo { border-radius: 999px; }
+            #btn-login { border-radius: 999px; }
+            .item-btn { border-radius: 6px; }
+            .badge { border-radius: 999px; }
+
+            select { border-radius: 8px; }
+            #ai-instruction { border-radius: 999px; padding: 0 14px; }
+            #ai-bar { padding: 8px 10px; }
+
+            .file-item { border-radius: 8px; margin: 1px 6px; }
+            #dir-bar { border-radius: 8px; margin: 6px 6px 0; }
+            .tab-group { gap: 4px; padding: 4px 0; }
+            .tab-btn { border-radius: 8px; height: 100%; padding: 0 14px; }
+            .tab-btn.active { border-radius: 8px; }
+
+            #console-header { border-radius: 0; }
+            .log-err { border-radius: 0 8px 8px 0; }
+            #editor-status { border-radius: 0; }
+
+            #toast { border-radius: 12px; }
+            #modal-box { border-radius: 18px; }
+            #media-viewer img, #media-viewer video { border-radius: 12px; }
+            #file-tree.drop-over { border-radius: 10px; }
+            .resizer.v, .resizer.h { border-radius: 999px; }
   </style>
 </head>
 <body>
@@ -1571,9 +1610,9 @@
                                                     { token: 'delimiter', foreground: '8892a6' }
                                                   ],
                                                   colors: {
-                                                    'editor.background': '#0a0a0a',
+                                                    'editor.background': '#000000',
                                                     'editor.foreground': '#d4d4d4',
-                                                    'editorGutter.background': '#0a0a0a',
+                                                    'editorGutter.background': '#000000',
                                                     'editor.lineHighlightBackground': '#ffffff08',
                                                     'editor.lineHighlightBorder': '#00000000',
                                                     'editor.selectionBackground': '#ffffff22',
@@ -1603,6 +1642,8 @@
                                                     cursorSmoothCaretAnimation: 'on',
                                                     renderLineHighlight: 'all',
                                                     roundedSelection: true,
+                                                                              guides: { indentation: true, highlightActiveIndentation: true },
+                                                                              scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10, useShadows: false },
                                                     scrollBeyondLastLine: false,
                                                     overviewRulerBorder: false,
                                                     bracketPairColorization: { enabled: true },
