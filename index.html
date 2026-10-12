@@ -1253,12 +1253,14 @@
     });
   });
 
-  ui.btnLogout.addEventListener('click', () => {
-    clearSession();
-        signOut(auth).catch(() => { }).then(() => {
-          window.location.reload();
-        });
-  });
+  ui.btnLogout.addEventListener('click', async () => {
+      const confirmed = await uiConfirm('Log out', 'Are you sure you want to sign out of GitHub?', 'Log out');
+      if (!confirmed) return;
+      clearSession();
+      signOut(auth).catch(() => { }).then(() => {
+        window.location.reload();
+      });
+    });
 
   onAuthStateChanged(auth, (user) => {
       if (user) {
