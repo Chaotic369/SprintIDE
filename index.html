@@ -839,12 +839,35 @@
         body.mobile-mode button.mini { height: 20px; padding: 0 5px; font-size: 8.5px; border-radius: 4px; }
         body.mobile-mode button.icon-btn { height: 22px; padding: 0 6px; }
         body.mobile-mode .ico { width: 13px; height: 13px; }
-        body.mobile-mode button.icon-btn { height: 26px !important; padding: 0 8px !important; }
-                body.mobile-mode #btn-new-repo, body.mobile-mode #btn-live-site, body.mobile-mode #btn-logout, body.mobile-mode button.ai-btn, body.mobile-mode #btn-copy-prompt {
+        body.mobile-mode button.icon-btn,
+                body.mobile-mode #btn-new-repo,
+                body.mobile-mode #btn-live-site,
+                body.mobile-mode #btn-logout,
+                body.mobile-mode button.ai-btn,
+                body.mobile-mode #btn-copy-prompt {
+                  height: 26px !important;
+                  padding: 0 6px !important;
+                  position: relative !important;
+                  overflow: visible !important;
                   font-size: 0 !important;
                   gap: 0 !important;
-                  padding: 0 8px !important;
-                  height: 26px !important;
+                }
+                body.mobile-mode #btn-new-repo::after { content: "new"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
+                body.mobile-mode #btn-live-site::after { content: "live"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
+                body.mobile-mode #btn-logout::after { content: "exit"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
+                body.mobile-mode #btn-paste-ai::after { content: "patch"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
+                body.mobile-mode #btn-copy-prompt::after { content: "copy"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
+                body.mobile-mode #btn-undo::after { content: "undo"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
+                body.mobile-mode #btn-redo::after { content: "redo"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
+                body.mobile-mode #btn-fullscreen::after { content: "full"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
+                body.mobile-mode #btn-undo .cnt, body.mobile-mode #btn-redo .cnt { display: none; }
+                body.mobile-mode button.icon-btn .ico,
+                body.mobile-mode #btn-new-repo .ico,
+                body.mobile-mode #btn-live-site .ico,
+                body.mobile-mode #btn-logout .ico,
+                body.mobile-mode button.ai-btn .ico,
+                body.mobile-mode #btn-copy-prompt .ico {
+                  transform: translateY(-2px);
                 }
         body.mobile-mode #workspace { padding: 0 !important; margin: 0 !important; }
                 body.mobile-mode #main-area { 
