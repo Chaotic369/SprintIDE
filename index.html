@@ -946,7 +946,25 @@
                         body.mobile-mode .tab-btn { height: 22px; padding: 0 8px; font-size: 9px; }
                         body.mobile-mode #editor-tabs #current-file-label { flex: 0 0 auto; max-width: 80px; font-size: 8.5px; padding: 2px 6px; }
                         body.mobile-mode #editor-tabs #btn-undo { margin-left: auto !important; }
-                body.mobile-mode #dlg-input { font-size: 11px; height: 28px; }
+                                #btn-desk-view { display: none; }
+                                body.mobile-mode #btn-desk-view { display: inline-flex !important; }
+                                body.mobile-mode #btn-desk-view.active { background: #f59e0b !important; color: #1a1100 !important; }
+                                body.mobile-mode #btn-desk-view::after { content: "desk"; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%) scale(0.7); font-size: 8px; line-height: 1; opacity: 0.75; letter-spacing: -0.02em; pointer-events: none; }
+
+                                /* Rotated desktop canvas in mobile preview */
+                                body.mobile-mode.is-desktop-view #preview-frame {
+                                  position: absolute !important;
+                                  top: 50% !important;
+                                  left: 50% !important;
+                                  width: 100vh !important;
+                                  height: 100vw !important;
+                                  max-width: 100vh !important;
+                                  max-height: 100vw !important;
+                                  transform: translate(-50%, -50%) rotate(90deg) !important;
+                                  transform-origin: center center !important;
+                                  border-radius: 0 !important;
+                                }
+                                body.mobile-mode #dlg-input { font-size: 11px; height: 28px; }
                 body.mobile-mode #editor-status { height: 18px; padding: 0 6px; font-size: 8.5px; }
                 body.mobile-mode #editor-status button.mini { height: 16px; padding: 0 4px; font-size: 8px; }
                 body.mobile-mode #console-panel,
@@ -1059,48 +1077,49 @@
                             .m-flash-box.has-err .m-flash-bar { background: var(--accent-red); }
                             @keyframes mFlashTimer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
-        /* Floating code action buttons in mobile mode - shifted bottom-wise */
-              body.mobile-mode #code-toolbar {
-                position: absolute;
-                bottom: 8px;
-                right: 6px;
-                top: auto;
-                z-index: 25;
-                display: none;
-                flex-wrap: nowrap;
-                justify-content: flex-end;
-                gap: 3px;
-                max-width: calc(100% - 12px);
-                overflow-x: auto;
-                scrollbar-width: none;
-                background: transparent !important;
-                backdrop-filter: none !important;
-                -webkit-backdrop-filter: none !important;
-                padding: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
-                pointer-events: auto;
-              }
-        body.mobile-mode #code-toolbar::-webkit-scrollbar {
-          display: none;
-        }
-        body.mobile-mode #main-area:has(#tab-code.active) #code-toolbar,
-        body.mobile-mode.is-code-view #code-toolbar {
-          display: flex !important;
-        }
-        body.mobile-mode #code-toolbar button.mini {
-                height: 20px;
-                padding: 0 5px;
-                font-size: 7.5px;
-                letter-spacing: -0.01em;
-                background: #1c1c1c;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 4px;
-                flex-shrink: 0;
-              }
-        body.mobile-mode #code-toolbar button.mini:hover {
-          background: #2a2a2a;
-        }
+        /* Floating code action buttons pinned cleanly above bottom controls in mobile mode */
+                body.mobile-mode #code-toolbar {
+                  position: absolute;
+                  bottom: 26px !important;
+                  right: 8px !important;
+                  top: auto !important;
+                  z-index: 35 !important;
+                  display: none;
+                  flex-wrap: nowrap;
+                  justify-content: flex-end;
+                  gap: 4px;
+                  max-width: calc(100% - 16px);
+                  overflow-x: auto;
+                  scrollbar-width: none;
+                  background: rgba(14, 16, 22, 0.88) !important;
+                  backdrop-filter: blur(8px) !important;
+                  -webkit-backdrop-filter: blur(8px) !important;
+                  padding: 3px 5px !important;
+                  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+                  border-radius: 6px !important;
+                  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7) !important;
+                  pointer-events: auto;
+                }
+                body.mobile-mode #code-toolbar::-webkit-scrollbar {
+                  display: none;
+                }
+                body.mobile-mode #main-area:has(#tab-code.active) #code-toolbar,
+                body.mobile-mode.is-code-view #code-toolbar {
+                  display: flex !important;
+                }
+                body.mobile-mode #code-toolbar button.mini {
+                  height: 22px;
+                  padding: 0 6px;
+                  font-size: 8.5px;
+                  letter-spacing: 0;
+                  background: #18181b;
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                  border-radius: 4px;
+                  flex-shrink: 0;
+                }
+                body.mobile-mode #code-toolbar button.mini:hover {
+                  background: #27272a;
+                }
       </style>
   </head>
 <body>
@@ -1211,7 +1230,8 @@
                                           <button id="btn-undo" class="icon-btn hist" disabled title="Undo (Ctrl+Z)"><svg class="ico" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span id="undo-count" class="cnt">0</span></button>
                                 <button id="btn-redo" class="icon-btn hist" disabled title="Redo (Ctrl+Y)"><svg class="ico" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg><span id="redo-count" class="cnt">0</span></button>
                                 <button id="btn-fullscreen" class="icon-btn" title="Fullscreen the preview and code area"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
-                                <button id="btn-paste-ai" class="ai-btn" title="Apply an AI patch from the clipboard (Ctrl+Shift+V)"><svg class="ico" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Paste AI Fix</button>
+                                                                <button id="btn-desk-view" class="icon-btn" title="Toggle horizontal desktop view"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>
+                                                                <button id="btn-paste-ai" class="ai-btn" title="Apply an AI patch from the clipboard (Ctrl+Shift+V)"><svg class="ico" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Paste AI Fix</button>
                       </div>
                             <div id="console-panel">
                         <div id="console-header">
