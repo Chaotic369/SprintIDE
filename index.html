@@ -1108,18 +1108,35 @@
                   display: flex !important;
                 }
                 body.mobile-mode #code-toolbar button.mini {
-                  height: 22px;
-                  padding: 0 6px;
-                  font-size: 8.5px;
-                  letter-spacing: 0;
-                  background: #18181b;
-                  border: 1px solid rgba(255, 255, 255, 0.1);
-                  border-radius: 4px;
-                  flex-shrink: 0;
-                }
-                body.mobile-mode #code-toolbar button.mini:hover {
-                  background: #27272a;
-                }
+                          height: 22px;
+                          padding: 0 6px;
+                          font-size: 9px;
+                          font-weight: 500;
+                          letter-spacing: 0.01em;
+                          border-radius: 5px;
+                          background: var(--bg-elevated);
+                          color: var(--text-main);
+                          border: 1px solid var(--border);
+                          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+                          flex-shrink: 0;
+                          transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+                        }
+                        body.mobile-mode #code-toolbar button.mini:hover:not(:disabled) {
+                          background: rgba(255, 255, 255, 0.08);
+                          border-color: rgba(255, 255, 255, 0.18);
+                          color: #fff;
+                          transform: translateY(-1px);
+                        }
+                        body.mobile-mode #code-toolbar button.mini.danger {
+                          color: #fda4af;
+                          border-color: rgba(244, 63, 94, 0.25);
+                          background: rgba(244, 63, 94, 0.08);
+                        }
+                        body.mobile-mode #code-toolbar button.mini.danger:hover:not(:disabled) {
+                          background: rgba(244, 63, 94, 0.2);
+                          border-color: var(--accent-red);
+                          color: #fff;
+                        }
       </style>
   </head>
 <body>
