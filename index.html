@@ -2026,13 +2026,19 @@
       }
 
       function toggleIdeFull() {
-        if (!document.fullscreenElement) {
-          if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
+        const doc = document;
+        const elem = doc.documentElement;
+        if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
+          if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(() => {});
+          } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
           }
         } else {
-          if (document.exitFullscreen) {
-            document.exitFullscreen().catch(() => {});
+          if (doc.exitFullscreen) {
+            doc.exitFullscreen().catch(() => {});
+          } else if (doc.webkitExitFullscreen) {
+            doc.webkitExitFullscreen();
           }
         }
       }
