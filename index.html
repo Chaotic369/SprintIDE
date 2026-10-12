@@ -806,15 +806,29 @@
         #btn-mobile-toggle.active { background: #f59e0b; color: #1a1100; }
         body.mobile-mode #mobile-backdrop.show { display: block; }
         body.mobile-mode, body.mobile-mode #app-layout { 
-          height: 100vh; 
-          height: 100dvh; 
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end; 
-          padding-top: max(80px, 15vh);
-        }
-        body.mobile-mode #header { order: 2; margin-top: auto; margin-bottom: 4px; height: 30px; margin: 2px 4px 4px; padding: 0 4px; gap: 3px; border-radius: 8px; }
-        body.mobile-mode #workspace { order: 1; flex: 1; min-height: 0; }
+                height: 100vh; 
+                height: 100dvh; 
+                display: flex;
+                flex-direction: column;
+                padding-top: 0;
+                margin: 0;
+                overflow: hidden;
+              }
+              body.mobile-mode #workspace { 
+                order: 1; 
+                flex: 1; 
+                min-height: 0; 
+                padding: 0 3px 2px;
+              }
+              body.mobile-mode #header { 
+                order: 2; 
+                margin: 2px 4px calc(env(safe-area-inset-bottom, 0px) + 3px); 
+                height: 30px; 
+                padding: 0 4px; 
+                gap: 3px; 
+                border-radius: 8px; 
+                flex-shrink: 0;
+              }
         body.mobile-mode .brand-tag, body.mobile-mode #user-display, body.mobile-mode #btn-fullscreen-ide, body.mobile-mode #resize-sidebar, body.mobile-mode #resize-console, body.mobile-mode #editor-hint { display: none !important; }
         body.mobile-mode #header .header-group:first-of-type { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; gap: 3px; }
         body.mobile-mode #header .header-group:last-of-type { flex-shrink: 0; gap: 3px; }
