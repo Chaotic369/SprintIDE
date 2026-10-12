@@ -3099,11 +3099,18 @@ body.mobile-mode #sidebar.collapsed {
           previewStale = true;
           if (currentFile) ui.btnPush.disabled = false;
           if (sourceContent) ui.watermark.style.display = 'none';
-              clearTimeout(typingTimer);
-              typingTimer = setTimeout(histCommit, 500);
-              updateHistUI();
+          clearTimeout(typingTimer);
+          typingTimer = setTimeout(histCommit, 500);
+          updateHistUI();
           setDirty(true);
           updateStatus();
+          updateLineNumbers();
+        });
+
+        ui.codeEditor.addEventListener('scroll', () => {
+          if (ui.lineNumbers) {
+            ui.lineNumbers.scrollTop = ui.codeEditor.scrollTop;
+          }
         });
 
         ui.codeEditor.addEventListener('keydown', (e) => {
@@ -3640,74 +3647,53 @@ body.mobile-mode #sidebar.collapsed {
 
           // View Toggles
             ui.tabPreview.addEventListener('click', () => {
-                          ui.tabPreview.classList.add('active');
-                          document.body.classList.remove('is-code-view');
-                          ui.editorStatus.style.display = 'none';
-                          ui.codeToolbar.style.display = 'none';
+              ui.tabPreview.classList.add('active');
+              document.body.classList.remove('is-code-view');
+              ui.editorStatus.style.display = 'none';
+              ui.codeToolbar.style.display = 'none';
               if (previewStale) renderPreview(sourceContent);
               ui.tabCode.classList.remove('active');
               ui.previewFrame.style.display = 'block';
-              ui.monacoContainer.style.display = 'none';
-              ui.codeEditor.style.display = 'none';
+              if (ui.codeWrapper) ui.codeWrapper.style.display = 'none';
               ui.mediaViewer.style.display = 'none';
             });
 
             ui.tabCode.addEventListener('click', () => {
-                          ui.tabCode.classList.add('active');
-                          document.body.classList.add('is-code-view');
-                          ui.tabPreview.classList.remove('active');
-                          ui.previewFrame.style.display = 'none';
-                          ui.mediaViewer.style.display = 'none';
-                          ui.codeToolbar.style.display = 'inline-flex';
-              initMonaco();
-              if (monacoReady && monacoEditor) {
-                ui.monacoContainer.style.display = 'block';
-                ui.codeEditor.style.display = 'none';
-                if (currentFile) {
-                  const model = monacoEditor.getModel();
-                  if (model) window.monaco.editor.setModelLanguage(model, getMonacoLanguage(currentFile));
-                }
-                monacoEditor.setValue(sourceContent);
-                monacoEditor.layout();
-              } else {
-                ui.monacoContainer.style.display = 'none';
-                ui.codeEditor.style.display = 'block';
-                ui.codeEditor.value = sourceContent;
-              }
+              ui.tabCode.classList.add('active');
+              document.body.classList.add('is-code-view');
+              ui.tabPreview.classList.remove('active');
+              ui.previewFrame.style.display = 'none';
+              ui.mediaViewer.style.display = 'none';
+              ui.codeToolbar.style.display = 'inline-flex';
+              if (ui.codeWrapper) ui.codeWrapper.style.display = 'flex';
+              ui.codeEditor.value = sourceContent;
               ui.editorStatus.style.display = 'flex';
               updateStatus();
+              updateLineNumbers();
             });
 
             ui.btnFind.addEventListener('click', async () => {
-              if (monacoEditor && monacoReady) {
-                monacoEditor.getAction('actions.find').run();
-              } else {
-                const term = await uiPrompt('Find', 'Text to find in the file.', '', 'Search text');
-                if (!term) return;
-                const rep = await uiPrompt('Replace', 'Replace every match with this text. Leave empty to remove matches.', '', 'Replacement text');
-                if (rep !== null) {
-                  const updated = ui.codeEditor.value.split(term).join(rep);
-                  applyHist(updated);
-                }
+              const term = await uiPrompt('Find', 'Text to find in the file.', '', 'Search text');
+              if (!term) return;
+              const rep = await uiPrompt('Replace', 'Replace every match with this text. Leave empty to remove matches.', '', 'Replacement text');
+              if (rep !== null) {
+                const updated = ui.codeEditor.value.split(term).join(rep);
+                applyHist(updated);
               }
             });
 
             ui.btnGoto.addEventListener('click', async () => {
-              if (monacoEditor && monacoReady) {
-                monacoEditor.getAction('editor.action.gotoLine').run();
-              } else {
-                const lineStr = await uiPrompt('Go to line', 'Enter a line number.', '', '1');
-                const lineNum = parseInt(lineStr, 10);
-                if (isNaN(lineNum) || lineNum < 1) return;
-                const lines = ui.codeEditor.value.split('\n');
-                let pos = 0;
-                for (let i = 0; i < Math.min(lineNum - 1, lines.length); i++) {
-                  pos += lines[i].length + 1;
-                }
-                ui.codeEditor.focus();
-                ui.codeEditor.setSelectionRange(pos, pos);
-                updateStatus();
+              const lineStr = await uiPrompt('Go to line', 'Enter a line number.', '', '1');
+              const lineNum = parseInt(lineStr, 10);
+              if (isNaN(lineNum) || lineNum < 1) return;
+              const lines = ui.codeEditor.value.split('\n');
+              let pos = 0;
+              for (let i = 0; i < Math.min(lineNum - 1, lines.length); i++) {
+                pos += lines[i].length + 1;
               }
+              ui.codeEditor.focus();
+              ui.codeEditor.setSelectionRange(pos, pos);
+              updateStatus();
             });
 
             ui.btnCodeCopy.addEventListener('click', () => {
