@@ -499,6 +499,39 @@
               .resizer.h::before { width: 32px; height: 3px; }
               .resizer:hover::before, .resizer.dragging::before { background: #a3a3a3; }
 
+                /* ===== Explorer polish ===== */
+                #sidebar { background: #000000; }
+                .sidebar-header { padding: 10px 8px 6px; background: transparent; }
+                .side-actions { gap: 4px; padding: 3px; border-radius: 10px; background: #111111; }
+                .side-actions button { flex: 1 1 0; justify-content: center; height: 26px; background: transparent; color: var(--text-muted); border-radius: 8px; }
+                .side-actions button:hover:not(:disabled) { background: #222222; color: #fff; }
+
+                #dir-bar { margin: 4px 8px 6px; padding: 0 6px 0 10px; height: 28px; gap: 8px; border-radius: 8px; background: #0e0e0e; }
+                #dir-bar > .ico { color: #f59e0b; width: 12px; height: 12px; }
+                #dir-label { font-size: 10.5px; color: var(--text-muted); }
+                #dir-bar button.mini { height: 20px; padding: 0 8px; font-size: 10px; background: #1c1c1c; border-radius: 6px; }
+
+                #file-tree { padding: 4px 0 14px; scrollbar-width: thin; }
+                .file-item { position: relative; height: 28px; padding-top: 0; padding-bottom: 0; margin: 1px 8px; gap: 8px; font-size: 12px; border-left-width: 0; border-radius: 8px; color: var(--text-muted); transition: background 0.12s ease, color 0.12s ease; }
+                .file-item:hover { background: #151515; color: #fff; }
+                .file-item.active { background: #1c1c1c; color: #fff; font-weight: 500; }
+                .file-item.active::before { content: ""; position: absolute; left: 0; top: 7px; bottom: 7px; width: 3px; border-radius: 999px; background: #f59e0b; }
+                .file-item.dir-item { font-weight: 600; font-size: 11.5px; color: #d4d4d4; }
+                .file-item.dir-item:hover { background: #151515; color: #fff; }
+                .file-item.cur-dir:not(.active) { background: #0e0e0e; }
+                .file-item.cur-dir::before { content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 2px; border-radius: 999px; background: #525252; }
+                .dir-item .chev { width: 11px; height: 11px; color: #737373; }
+                .dir-item.open .chev { color: #f59e0b; }
+                .fi-name { flex: 1; font-size: inherit; }
+
+                .item-actions { gap: 2px; padding: 2px; border-radius: 6px; background: #000000; }
+                .item-btn { height: 20px; width: 20px; padding: 0; justify-content: center; background: transparent; }
+                .item-btn:hover { background: #262626; color: #fff; }
+                .item-btn.btn-del:hover { background: #2a1217; color: var(--accent-red); }
+
+                .tree-empty { margin: 12px 8px; padding: 18px 12px; text-align: center; border-radius: 10px; background: #0e0e0e; color: var(--text-sub); }
+                #file-tree.drop-over { outline: 1px dashed #f59e0b; outline-offset: -4px; background: rgba(245, 158, 11, 0.05); border-radius: 12px; }
+
               /* ===== Polished buttons and top bars ===== */
               button { height: 28px; padding: 0 12px; font-size: 11.5px; font-weight: 500; letter-spacing: 0.01em; background: #1c1c1c; box-shadow: none; transition: background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.1s ease, filter 0.15s ease; }
                 button:hover:not(:disabled) { background: #2a2a2a; box-shadow: none; }
