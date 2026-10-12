@@ -90,6 +90,8 @@
         #editor-status .sp { flex: 1; }
         #editor-status button.mini { padding: 1px 6px; }
         #editor-hint { color: #5b6470; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+          .cnt { font-size: 9px; font-weight: 700; min-width: 12px; text-align: center; color: var(--text-muted); margin-left: 2px; }
+          button.hist:not(:disabled) .cnt { color: var(--accent-blue); }
         .ico { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
         .brand-tag .ico { color: var(--accent-blue); }
         .file-item .fi-icon { display: inline-flex; align-items: center; }
@@ -143,7 +145,9 @@
                   </div>
                   <span id="current-file-label">No file open</span>
                   <div style="flex:1;"></div>
-        <button id="btn-fullscreen" class="icon-btn" title="Fullscreen the preview and code area"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+        <button id="btn-undo" class="icon-btn hist" disabled title="Undo (Ctrl+Z)"><svg class="ico" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span id="undo-count" class="cnt">0</span></button>
+                <button id="btn-redo" class="icon-btn hist" disabled title="Redo (Ctrl+Y)"><svg class="ico" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg><span id="redo-count" class="cnt">0</span></button>
+                <button id="btn-fullscreen" class="icon-btn" title="Fullscreen the preview and code area"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
                 <button id="btn-paste-ai" class="ai-btn" title="Apply an AI patch from the clipboard (Ctrl+Shift+V)"><svg class="ico" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Paste AI Fix</button>
       </div>
       
@@ -158,7 +162,7 @@
         <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
                 <div id="editor-status">
                   <span id="status-pos">Ln 1, Col 1</span>
-                  <span id="editor-hint">Tab indent | Shift+Tab outdent | Ctrl+S push</span>
+                  <span id="editor-hint">Tab indent | Shift+Tab outdent | Ctrl+S push | Ctrl+Z undo | Ctrl+Y redo</span>
                   <span class="sp"></span>
                   <button id="btn-wrap" class="mini" title="Toggle word wrap">Wrap: off</button>
                 </div>
@@ -204,6 +208,11 @@
   let sourceContent = '';
   let fileTree = [];
     let previewStale = false;
+      let undoStack = [];
+      let redoStack = [];
+      let lastSnap = '';
+      let typingTimer = null;
+      const HIST_MAX = 100;
 
   // DOM Elements
   const ui = {
@@ -238,6 +247,10 @@
         btnToggleSidebar: document.getElementById('btn-toggle-sidebar'),
         fileLabel: document.getElementById('current-file-label'),
         statusPos: document.getElementById('status-pos'),
+            btnUndo: document.getElementById('btn-undo'),
+            btnRedo: document.getElementById('btn-redo'),
+            undoCount: document.getElementById('undo-count'),
+            redoCount: document.getElementById('redo-count'),
             editorStatus: document.getElementById('editor-status'),
             btnWrap: document.getElementById('btn-wrap'),
             toast: document.getElementById('toast')
@@ -380,6 +393,7 @@
         setDirty(false);
     sourceContent = '';
     ui.codeEditor.value = '';
+        histReset('');
     renderPreview('');
     ui.btnLiveSite.style.display = 'inline-flex';
     
@@ -447,6 +461,7 @@
       const data = await res.json();
       
       sourceContent = base64ToUnicode(data.content);
+            histReset(sourceContent);
       currentFile = path;
             setDirty(false);
       ui.codeEditor.value = sourceContent;
@@ -629,7 +644,65 @@
           }
         }
 
-        function updateStatus() {
+        function updateHistUI() {
+            var pending = sourceContent !== lastSnap ? 1 : 0;
+            var u = undoStack.length + pending;
+            var r = pending ? 0 : redoStack.length;
+            ui.undoCount.textContent = u;
+            ui.redoCount.textContent = r;
+            ui.btnUndo.disabled = u === 0;
+            ui.btnRedo.disabled = r === 0;
+          }
+
+          function histReset(text) {
+            clearTimeout(typingTimer);
+            typingTimer = null;
+            undoStack = [];
+            redoStack = [];
+            lastSnap = text;
+            updateHistUI();
+          }
+
+          function histCommit() {
+            clearTimeout(typingTimer);
+            typingTimer = null;
+            if (sourceContent === lastSnap) {
+              updateHistUI();
+              return;
+            }
+            undoStack.push(lastSnap);
+            if (undoStack.length > HIST_MAX) undoStack.shift();
+            lastSnap = sourceContent;
+            redoStack = [];
+            updateHistUI();
+          }
+
+          function applyHist(text) {
+            sourceContent = text;
+            lastSnap = text;
+            ui.codeEditor.value = text;
+            if (ui.tabPreview.classList.contains('active')) renderPreview(text); else previewStale = true;
+            if (currentFile) ui.btnPush.disabled = false;
+            setDirty(true);
+            updateHistUI();
+            updateStatus();
+          }
+
+          function doUndo() {
+            histCommit();
+            if (!undoStack.length) return;
+            redoStack.push(sourceContent);
+            applyHist(undoStack.pop());
+          }
+
+          function doRedo() {
+            histCommit();
+            if (!redoStack.length) return;
+            undoStack.push(sourceContent);
+            applyHist(redoStack.pop());
+          }
+
+          function updateStatus() {
           const ta = ui.codeEditor;
           const before = ta.value.slice(0, ta.selectionStart);
           const line = before.split('\n').length;
@@ -643,13 +716,26 @@
           previewStale = true;
           if (currentFile) ui.btnPush.disabled = false;
           if (sourceContent) ui.watermark.style.display = 'none';
+              clearTimeout(typingTimer);
+              typingTimer = setTimeout(histCommit, 500);
+              updateHistUI();
           setDirty(true);
           updateStatus();
         });
 
         ui.codeEditor.addEventListener('keydown', (e) => {
           const ta = ui.codeEditor;
-          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                e.preventDefault();
+                if (e.shiftKey) doRedo(); else doUndo();
+                return;
+              }
+              if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                e.preventDefault();
+                doRedo();
+                return;
+              }
+              if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
             e.preventDefault();
             if (!ui.btnPush.disabled) ui.btnPush.click();
             return;
@@ -686,7 +772,10 @@
           ui.codeEditor.addEventListener(ev, updateStatus);
         });
 
-        ui.btnWrap.addEventListener('click', () => {
+        ui.btnUndo.addEventListener('click', doUndo);
+          ui.btnRedo.addEventListener('click', doRedo);
+
+          ui.btnWrap.addEventListener('click', () => {
           const turnOn = ui.codeEditor.getAttribute('wrap') === 'off';
           ui.codeEditor.setAttribute('wrap', turnOn ? 'soft' : 'off');
           ui.btnWrap.textContent = turnOn ? 'Wrap: on' : 'Wrap: off';
@@ -836,6 +925,7 @@
     // Full file initialization bypass
     if (!sourceContent && (raw.includes('<!DOCTYPE') || raw.includes('<html'))) {
       sourceContent = fixEncoding(raw);
+            histReset(sourceContent);
       renderPreview(sourceContent);
       ui.codeEditor.value = sourceContent;
       ui.btnPush.disabled = false;
@@ -853,13 +943,15 @@
       return;
     }
 
-    let stagingContent = sourceContent;
+    histCommit();
+        let stagingContent = sourceContent;
     try {
       blocks.forEach((b, i) => {
         stagingContent = applyBlock(stagingContent, b);
       });
       
       sourceContent = stagingContent;
+            histCommit();
       renderPreview(sourceContent);
       ui.codeEditor.value = sourceContent;
       setDirty(true);
