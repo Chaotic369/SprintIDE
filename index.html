@@ -3195,11 +3195,12 @@
             });
 
             ui.btnCodeClear.addEventListener('click', async () => {
-              if (await uiConfirm('Clear editor', 'Clear all code in the current editor?', 'Clear')) {
-                applyHist('');
-                showToast("Editor cleared");
-              }
-            });
+                          if (await uiConfirm('Clear editor', 'Clear all code in the current editor?', 'Clear')) {
+                            histCommit();
+                            applyHist('');
+                            showToast("Editor cleared");
+                          }
+                        });
 
   // Iframe Error Interception Bridge
   const bridgeScript = `
