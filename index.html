@@ -36,6 +36,7 @@
     #login-screen .login-note { color: #5b6470; font-size: 10px; }
     #btn-login { padding: 9px 20px; font-size: 13px; gap: 8px; margin-top: 6px; }
     #btn-login .ico { width: 16px; height: 16px; }
+      html.has-session #login-screen { display: none; }
   #app-layout { display: none; flex-direction: column; height: 100vh; }
   
   #header { height: 34px; background: var(--bg-header); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 10px; justify-content: space-between; flex-shrink: 0; gap: 8px; }
@@ -123,13 +124,14 @@
 </head>
 <body>
 
+<script>try { if (localStorage.getItem('vibe_ide_session')) document.documentElement.classList.add('has-session'); } catch (e) { }</script>
 <!-- Login Screen -->
 <div id="login-screen">
   <svg class="login-logo" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
     <h2>Sprint IDE</h2>
     <p class="login-sub">Sign in with GitHub to load your repositories and deploy changes.</p>
     <button id="btn-login" class="primary"><svg class="ico" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.7 5.4-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg><span id="login-label">Sign in with GitHub</span></button>
-    <span class="login-note">A popup will open. Allow popups for this page if nothing appears.</span>
+    <span class="login-note">A popup will open. Allow popups if nothing appears. You stay signed in on this browser until you click Logout.</span>
 </div>
 
 <!-- Main App Layout -->
@@ -354,6 +356,7 @@
       const credential = GithubAuthProvider.credentialFromResult(result);
       ghToken = credential.accessToken;
       ghUser = result.user.reloadUserInfo.screenName;
+            saveSession();
       initIDE();
     }).catch(err => {
       ui.btnLogin.disabled = false;
@@ -363,9 +366,10 @@
   });
 
   ui.btnLogout.addEventListener('click', () => {
-    signOut(auth).then(() => {
-      window.location.reload();
-    });
+    clearSession();
+        signOut(auth).catch(() => { }).then(() => {
+          window.location.reload();
+        });
   });
 
   onAuthStateChanged(auth, (user) => {
@@ -379,7 +383,50 @@
       }
     });
 
-  // IDE Init
+  // Saved Login (localStorage)
+    const SESSION_KEY = 'vibe_ide_session';
+
+    function saveSession() {
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ token: ghToken, user: ghUser }));
+      } catch (e) {
+        log('Could not save login in this browser.', 'err');
+      }
+    }
+
+    function clearSession() {
+      try {
+        localStorage.removeItem(SESSION_KEY);
+      } catch (e) { }
+    }
+
+    function showLogin() {
+      ghToken = '';
+      ghUser = '';
+      ui.appLayout.style.display = 'none';
+      ui.loginScreen.style.display = 'flex';
+      ui.btnLogin.disabled = false;
+      ui.loginLabel.textContent = 'Sign in with GitHub';
+    }
+
+    function restoreSession() {
+      let saved = null;
+      try {
+        saved = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+      } catch (e) {
+        saved = null;
+      }
+      if (saved && saved.token && saved.user) {
+        ghToken = saved.token;
+        ghUser = saved.user;
+        initIDE().catch((err) => log(err.message, 'err'));
+        return;
+      }
+      clearSession();
+      showLogin();
+    }
+
+    // IDE Init
   async function initIDE() {
     ui.loginScreen.style.display = 'none';
     ui.appLayout.style.display = 'flex';
@@ -394,7 +441,13 @@
       const res = await fetch('https://api.github.com/user/repos?sort=updated&per_page=50', {
         headers: { Authorization: `token ${ghToken}` }
       });
-      if (!res.ok) throw new Error("Failed to fetch repos");
+      if (res.status === 401) {
+              clearSession();
+              showLogin();
+              showToast("Saved login expired. Please sign in again.", true);
+              return;
+            }
+            if (!res.ok) throw new Error("Failed to fetch repos");
       const repos = await res.json();
       
       ui.repoSelect.innerHTML = '<option value="">-- Select Repo --</option>';
@@ -1129,7 +1182,9 @@
 
       ui.btnPasteAi.addEventListener('click', handlePaste);
 
-  // Manual Paste Fallback
+  restoreSession();
+
+    // Manual Paste Fallback
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'v' && e.shiftKey) {
       e.preventDefault();
