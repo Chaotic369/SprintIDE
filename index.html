@@ -499,6 +499,12 @@
               .resizer.h::before { width: 32px; height: 3px; }
               .resizer:hover::before, .resizer.dragging::before { background: #a3a3a3; }
 
+                /* ===== Push button states ===== */
+                #btn-push { transition: background 0.15s ease, color 0.15s ease; }
+                #btn-push:disabled { background: #1c1c1c; color: #737373; opacity: 1; cursor: not-allowed; }
+                #btn-push:not(:disabled) { background: #f59e0b; color: #1a1100; }
+                #btn-push:not(:disabled):hover { background: #fbbf24; }
+
                 /* ===== Explorer polish ===== */
                 #sidebar { background: #000000; }
                 .sidebar-header { padding: 10px 8px 6px; background: transparent; }
@@ -767,6 +773,8 @@
   let sourceContent = '';
   let fileTree = [];
     let previewStale = false;
+        let savedContent = '';
+        let pushingNow = false;
       let undoStack = [];
       let redoStack = [];
       let lastSnap = '';
@@ -870,9 +878,11 @@
       }
 
       function setDirty(flag) {
-        ui.fileLabel.textContent = currentFile ? currentFile + (flag ? ' ●' : '') : 'No file open';
-        ui.fileLabel.classList.toggle('dirty', !!flag);
-      }
+              if (!flag) savedContent = sourceContent; else flag = sourceContent !== savedContent;
+              ui.fileLabel.textContent = currentFile ? currentFile + (flag ? ' ●' : '') : 'No file open';
+              ui.fileLabel.classList.toggle('dirty', !!flag);
+              ui.btnPush.disabled = !(currentFile && flag) || pushingNow;
+            }
 
   function svgIcon(inner, color) {
       return '<svg class="ico" viewBox="0 0 24 24"' + (color ? ' style="color:' + color + '"' : '') + '>' + inner + '</svg>';
@@ -1560,6 +1570,7 @@
         renderFileTree();
         renderPreview(sourceContent);
         log(`Loaded ${path}`, 'success');
+                setDirty(false);
                 try { localStorage.setItem('sprint_ide_last_file', JSON.stringify({ repo: currentRepo, path: path })); } catch (e) { }
       } catch (err) {
         log(err.message, 'err');
@@ -1617,6 +1628,7 @@
     if (!currentRepo || !currentFile) return;
     ui.btnPush.disabled = true;
     ui.pushLabel.textContent = "Pushing...";
+        pushingNow = true;
     
     try {
       // Get SHA of current file (fresh each attempt) and commit, retrying on stale-SHA conflicts
@@ -1661,6 +1673,8 @@
     } finally {
       ui.btnPush.disabled = false;
       ui.pushLabel.textContent = "Push";
+            pushingNow = false;
+            setDirty(sourceContent !== savedContent);
     }
   });
 
