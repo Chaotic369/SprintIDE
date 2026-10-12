@@ -55,7 +55,7 @@
   .tab-btn.active { color: #fff; background: #21262d; }
   
   #view-container { flex: 1; position: relative; display: flex; min-height: 0; }
-  #code-editor { position: absolute; inset: 0; width: 100%; height: 100%; background: #0a0a0c; color: #e6edf3; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; line-height: 1.45; padding: 8px 10px; border: none; resize: none; outline: none; display: none; tab-size: 2; }
+  #code-editor { position: absolute; inset: 0; width: 100%; height: 100%; background: #0a0a0c; color: #e6edf3; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; line-height: 1.45; padding: 8px 10px 30px; border: none; resize: none; outline: none; display: none; tab-size: 2; }
   #preview-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: none; background: #fff; display: block; }
   
   /* Console */
@@ -86,6 +86,10 @@
       #ai-bar { display: flex; gap: 6px; align-items: center; padding: 4px 6px; background: var(--bg-panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
       #ai-instruction { flex: 1; min-width: 0; background: #0d1117; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; padding: 0 8px; height: 24px; font-size: 11px; outline: none; }
       #ai-instruction:focus { border-color: var(--accent-blue); }
+        #editor-status { display: none; position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; align-items: center; gap: 12px; padding: 3px 10px; background: var(--bg-header); border-top: 1px solid var(--border); font-size: 10px; color: var(--text-muted); }
+        #editor-status .sp { flex: 1; }
+        #editor-status button.mini { padding: 1px 6px; }
+        #editor-hint { color: #5b6470; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
         .ico { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
         .brand-tag .ico { color: var(--accent-blue); }
         .file-item .fi-icon { display: inline-flex; align-items: center; }
@@ -150,8 +154,14 @@
             <div id="view-container">
         <button id="btn-exit-full" class="mini" title="Exit fullscreen"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>Exit</button>
                 <div id="empty-watermark" class="watermark">Generate your app with AI,<br>copy the code, and click 'Paste AI Fix'</div>
-        <textarea id="code-editor" spellcheck="false" readonly></textarea>
+        <textarea id="code-editor" spellcheck="false" wrap="off" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
         <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
+                <div id="editor-status">
+                  <span id="status-pos">Ln 1, Col 1</span>
+                  <span id="editor-hint">Tab indent | Shift+Tab outdent | Ctrl+S push</span>
+                  <span class="sp"></span>
+                  <button id="btn-wrap" class="mini" title="Toggle word wrap">Wrap: off</button>
+                </div>
       </div>
       
       <div id="console-panel">
@@ -193,6 +203,7 @@
   let currentFile = '';
   let sourceContent = '';
   let fileTree = [];
+    let previewStale = false;
 
   // DOM Elements
   const ui = {
@@ -226,7 +237,10 @@
         sidebar: document.getElementById('sidebar'),
         btnToggleSidebar: document.getElementById('btn-toggle-sidebar'),
         fileLabel: document.getElementById('current-file-label'),
-        toast: document.getElementById('toast')
+        statusPos: document.getElementById('status-pos'),
+            editorStatus: document.getElementById('editor-status'),
+            btnWrap: document.getElementById('btn-wrap'),
+            toast: document.getElementById('toast')
   };
 
   // Utilities
@@ -600,9 +614,89 @@
         if (e.key === 'Escape' && ui.viewContainer.classList.contains('pseudo-full')) exitFull();
       });
 
-      // View Toggles
+      // Text Editor
+        function lineStartOf(text, pos) {
+          if (pos <= 0) return 0;
+          return text.lastIndexOf('\n', pos - 1) + 1;
+        }
+
+        function insertAtCursor(text) {
+          const ta = ui.codeEditor;
+          ta.focus();
+          if (!document.execCommand('insertText', false, text)) {
+            ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, 'end');
+            ta.dispatchEvent(new Event('input'));
+          }
+        }
+
+        function updateStatus() {
+          const ta = ui.codeEditor;
+          const before = ta.value.slice(0, ta.selectionStart);
+          const line = before.split('\n').length;
+          const col = before.length - before.lastIndexOf('\n');
+          const total = ta.value.split('\n').length;
+          ui.statusPos.textContent = 'Ln ' + line + ', Col ' + col + ' | ' + total + ' lines';
+        }
+
+        ui.codeEditor.addEventListener('input', () => {
+          sourceContent = ui.codeEditor.value;
+          previewStale = true;
+          if (currentFile) ui.btnPush.disabled = false;
+          if (sourceContent) ui.watermark.style.display = 'none';
+          setDirty(true);
+          updateStatus();
+        });
+
+        ui.codeEditor.addEventListener('keydown', (e) => {
+          const ta = ui.codeEditor;
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            if (!ui.btnPush.disabled) ui.btnPush.click();
+            return;
+          }
+          if (e.key === 'Tab') {
+            e.preventDefault();
+            if (!e.shiftKey) {
+              insertAtCursor('  ');
+              return;
+            }
+            const pos = ta.selectionStart;
+            const start = lineStartOf(ta.value, pos);
+            let n = 0;
+            while (n < 2 && ta.value.charAt(start + n) === ' ') n++;
+            if (n > 0) {
+              ta.setSelectionRange(start, start + n);
+              document.execCommand('delete');
+              const back = Math.max(start, pos - n);
+              ta.setSelectionRange(back, back);
+            }
+            return;
+          }
+          if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            const ls = lineStartOf(ta.value, ta.selectionStart);
+            let i = ls;
+            while (i < ta.selectionStart && (ta.value.charAt(i) === ' ' || ta.value.charAt(i) === '\t')) i++;
+            const indent = ta.value.slice(ls, i);
+            e.preventDefault();
+            insertAtCursor('\n' + indent);
+          }
+        });
+
+        ['keyup', 'click'].forEach((ev) => {
+          ui.codeEditor.addEventListener(ev, updateStatus);
+        });
+
+        ui.btnWrap.addEventListener('click', () => {
+          const turnOn = ui.codeEditor.getAttribute('wrap') === 'off';
+          ui.codeEditor.setAttribute('wrap', turnOn ? 'soft' : 'off');
+          ui.btnWrap.textContent = turnOn ? 'Wrap: on' : 'Wrap: off';
+        });
+
+        // View Toggles
   ui.tabPreview.addEventListener('click', () => {
     ui.tabPreview.classList.add('active');
+        ui.editorStatus.style.display = 'none';
+        if (previewStale) renderPreview(sourceContent);
     ui.tabCode.classList.remove('active');
     ui.previewFrame.style.display = 'block';
     ui.codeEditor.style.display = 'none';
@@ -613,7 +707,9 @@
     ui.tabPreview.classList.remove('active');
     ui.codeEditor.style.display = 'block';
     ui.previewFrame.style.display = 'none';
-    ui.codeEditor.value = sourceContent;
+        ui.codeEditor.value = sourceContent;
+        ui.editorStatus.style.display = 'flex';
+        updateStatus();
   });
 
   // Iframe Error Interception Bridge
@@ -630,7 +726,8 @@
   `;
 
   function renderPreview(code) {
-    ui.watermark.style.display = code ? 'none' : 'flex';
+    previewStale = false;
+        ui.watermark.style.display = code ? 'none' : 'flex';
     if (!code) {
       ui.previewFrame.srcdoc = '';
       return;
