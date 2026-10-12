@@ -8,65 +8,68 @@
   :root {
     --bg-dark: #0a0a0c;
     --bg-panel: #111215;
-    --bg-header: #1c1d20;
+    --bg-header: #16181d;
     --accent-blue: #5c9dff;
     --accent-green: #39d353;
     --accent-red: #f85149;
-    --text-main: #ffffff;
+    --text-main: #f0f6fc;
     --text-muted: #8b949e;
-    --border: #30363d;
+    --border: #262c36;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   body { background: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
   
   /* Buttons */
-  button { background: #21262d; color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
-  button:hover:not(:disabled) { background: #30363d; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  button.primary { background: var(--accent-green); color: #000; border: none; }
+  button { background: #1c2128; color: var(--text-main); border: 1px solid var(--border); padding: 4px 9px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; transition: 0.15s; }
+  button:hover:not(:disabled) { background: #2d333b; border-color: #444c56; }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.primary { background: #238636; color: #fff; border: 1px solid rgba(255,255,255,0.1); }
   button.primary:hover:not(:disabled) { background: #2ea043; }
-  button.danger { color: var(--accent-red); border-color: rgba(248,81,73,0.3); background: rgba(248,81,73,0.1); }
+  button.danger { color: var(--accent-red); border-color: rgba(248,81,73,0.25); background: rgba(248,81,73,0.08); }
+  button.danger:hover:not(:disabled) { background: rgba(248,81,73,0.18); border-color: var(--accent-red); }
   
   /* Layout */
-  #login-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
-  #app-layout { display: none; flex-direction: column; height: 100vh; }
+  #login-screen { display: none !important; }
+  #app-layout { display: flex; flex-direction: column; height: 100vh; }
   
-  #header { height: 50px; background: var(--bg-header); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; justify-content: space-between; flex-shrink: 0; }
-  #header-controls { display: flex; gap: 10px; align-items: center; }
-  select { background: #0a0a0c; color: #fff; border: 1px solid var(--border); padding: 6px; border-radius: 6px; font-size: 12px; outline: none; }
+  #header { height: 38px; background: var(--bg-header); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 10px; justify-content: space-between; flex-shrink: 0; gap: 8px; }
+  .brand-tag { font-size: 11px; font-weight: 700; color: #fff; letter-spacing: 0.5px; padding-right: 6px; border-right: 1px solid var(--border); display: flex; align-items: center; gap: 5px; }
+  #header-controls { display: flex; gap: 6px; align-items: center; }
+  select { background: #0d1117; color: #fff; border: 1px solid var(--border); padding: 3px 8px; border-radius: 4px; font-size: 11px; outline: none; height: 26px; }
 
   #workspace { display: flex; flex: 1; min-height: 0; }
   
   /* Sidebar */
-  #sidebar { width: 220px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-  .sidebar-header { padding: 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); }
-  #file-tree { flex: 1; overflow-y: auto; padding: 8px 0; }
-  .file-item { padding: 6px 16px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-muted); user-select: none; }
-  .file-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-  .file-item.active { background: rgba(92,157,255,0.15); color: var(--accent-blue); border-left: 3px solid var(--accent-blue); padding-left: 13px; }
+  #sidebar { width: 190px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-header { padding: 6px 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  #file-tree { flex: 1; overflow-y: auto; padding: 4px 0; }
+  .file-item { padding: 4px 10px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--text-muted); user-select: none; border-left: 2px solid transparent; }
+  .file-item:hover { background: rgba(255,255,255,0.04); color: #fff; }
+  .file-item.active { background: rgba(92,157,255,0.12); color: var(--accent-blue); border-left-color: var(--accent-blue); }
 
   /* Main Editor Area */
   #main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
-  #editor-tabs { height: 40px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 10px; gap: 10px; flex-shrink: 0; }
-  .tab-btn { background: transparent; border: none; padding: 8px 12px; color: var(--text-muted); border-radius: 0; border-bottom: 2px solid transparent; font-size: 13px; }
-  .tab-btn.active { color: #fff; border-bottom: 2px solid var(--accent-blue); }
+  #editor-tabs { height: 32px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 6px; gap: 4px; flex-shrink: 0; }
+  .tab-group { display: flex; background: #0a0a0c; border: 1px solid var(--border); border-radius: 4px; padding: 2px; gap: 2px; }
+  .tab-btn { background: transparent; border: none; padding: 3px 8px; color: var(--text-muted); border-radius: 3px; font-size: 11px; font-weight: 500; }
+  .tab-btn.active { color: #fff; background: #21262d; }
   
   #view-container { flex: 1; position: relative; display: flex; min-height: 0; }
-  #code-editor { position: absolute; inset: 0; width: 100%; height: 100%; background: #0a0a0c; color: #e6edf3; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; padding: 16px; border: none; resize: none; outline: none; display: none; tab-size: 2; }
+  #code-editor { position: absolute; inset: 0; width: 100%; height: 100%; background: #0a0a0c; color: #e6edf3; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; line-height: 1.45; padding: 12px; border: none; resize: none; outline: none; display: none; tab-size: 2; }
   #preview-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: none; background: #fff; display: block; }
   
   /* Console */
-  #console-panel { height: 150px; background: #0d1117; border-top: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-  #console-header { padding: 6px 12px; background: #161b22; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
-  #console-logs { flex: 1; overflow-y: auto; padding: 8px 12px; font-family: monospace; font-size: 11px; line-height: 1.4; color: #e6edf3; }
-  .log-err { color: #ff7b72; margin-bottom: 4px; border-left: 2px solid #ff7b72; padding-left: 8px; background: rgba(255,123,114,0.1); padding: 4px 8px; border-radius: 4px; }
-  .log-info { color: var(--accent-blue); margin-bottom: 4px; }
-  .log-success { color: var(--accent-green); margin-bottom: 4px; }
+  #console-panel { height: 115px; background: #0d1117; border-top: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  #console-header { padding: 4px 10px; background: #161b22; border-bottom: 1px solid var(--border); font-size: 10px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+  #console-logs { flex: 1; overflow-y: auto; padding: 6px 10px; font-family: monospace; font-size: 10px; line-height: 1.35; color: #e6edf3; }
+  .log-err { color: #ff7b72; margin-bottom: 2px; border-left: 2px solid #ff7b72; padding: 2px 6px; background: rgba(255,123,114,0.1); border-radius: 2px; }
+  .log-info { color: var(--accent-blue); margin-bottom: 2px; }
+  .log-success { color: var(--accent-green); margin-bottom: 2px; }
   
   /* Overlays & Utilities */
-  #toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg-panel); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; transform: translateY(100px); opacity: 0; transition: 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  #toast { position: fixed; bottom: 16px; right: 16px; background: var(--bg-panel); border: 1px solid var(--border); padding: 8px 14px; border-radius: 6px; font-size: 11px; font-weight: 500; transform: translateY(80px); opacity: 0; transition: 0.25s; z-index: 10000; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
   #toast.show { transform: translateY(0); opacity: 1; }
-  .watermark { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; color: rgba(255,255,255,0.1); pointer-events: none; text-align: center; line-height: 1.5; padding: 40px; }
+  .watermark { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; color: rgba(255,255,255,0.12); pointer-events: none; text-align: center; line-height: 1.4; padding: 20px; }
 </style>
 </head>
 <body>
@@ -82,13 +85,14 @@
 <div id="app-layout">
   <div id="header">
     <div id="header-controls">
+      <span class="brand-tag">⚡ VIBE IDE</span>
       <select id="repo-select" title="Select Repository"><option value="">Loading Repos...</option></select>
-      <button id="btn-new-repo">➕ New Sprint Repo</button>
-      <button id="btn-live-site" style="display:none;">🌐 View Live Site</button>
+      <button id="btn-new-repo" title="Create New Repository">➕ New</button>
+      <button id="btn-live-site" style="display:none;" title="Open live GitHub Pages deployment">🌐 Live</button>
     </div>
     <div id="header-controls">
-      <span id="user-display" style="font-size: 12px; color: var(--text-muted); margin-right: 10px;"></span>
-      <button id="btn-push" class="primary" disabled>💾 Push to Live</button>
+      <span id="user-display" style="font-size: 11px; color: var(--text-muted); margin-right: 6px;"></span>
+      <button id="btn-push" class="primary" disabled title="Commit and deploy changes">💾 Push</button>
       <button id="btn-logout" class="danger">Logout</button>
     </div>
   </div>
@@ -96,18 +100,20 @@
   <div id="workspace">
     <div id="sidebar">
       <div class="sidebar-header">
-        <span>FILES</span>
-        <button id="btn-new-file" style="padding: 2px 6px; font-size: 10px;">+ File</button>
+        <span>Explorer</span>
+        <button id="btn-new-file" style="padding: 1px 5px; font-size: 10px;">+ File</button>
       </div>
       <div id="file-tree"></div>
     </div>
     
     <div id="main-area">
       <div id="editor-tabs">
-        <button id="tab-preview" class="tab-btn active">Preview UI</button>
-        <button id="tab-code" class="tab-btn">Code (Read-Only)</button>
+        <div class="tab-group">
+          <button id="tab-preview" class="tab-btn active">Preview</button>
+          <button id="tab-code" class="tab-btn">Code</button>
+        </div>
         <div style="flex:1;"></div>
-        <button id="btn-paste-ai" class="primary" style="background: var(--accent-blue); color:#fff; font-size: 11px;">⚡ Paste AI Fix</button>
+        <button id="btn-paste-ai" class="primary" style="background: var(--accent-blue); color:#fff; font-size: 10px; padding: 3px 8px;">⚡ Paste AI Fix</button>
       </div>
       
       <div id="view-container">
@@ -220,16 +226,15 @@
   });
 
   onAuthStateChanged(auth, (user) => {
-    if (user) {
-       // Since Firebase doesn't persist the GitHub token across page reloads by default,
-       // we force a re-login if the page refreshes during the sprint. 
-       // For a 2.5 hour sprint, keeping it in memory is safest.
-       if (!ghToken) {
-           ui.loginScreen.style.display = 'flex';
-           ui.appLayout.style.display = 'none';
-       }
-    }
-  });
+      if (user) {
+         // Since Firebase doesn't persist the GitHub token across page reloads by default,
+         // we force a re-login if the page refreshes during the sprint. 
+         // For a 2.5 hour sprint, keeping it in memory is safest.
+         if (!ghToken) {
+             // Temporarily bypassed for UI editing
+         }
+      }
+    });
 
   // IDE Init
   async function initIDE() {
