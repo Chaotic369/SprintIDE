@@ -246,8 +246,22 @@
   #media-viewer audio { width: 80%; max-width: 500px; outline: none; }
   #media-viewer video { max-width: 90%; max-height: 80%; outline: none; background: #000; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
   #media-title { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; font-family: var(--font-code); }
-  #code-toolbar { display: none; gap: 4px; align-items: center; }
-  .code-mode-only { display: none; }
+    #code-toolbar { 
+      position: absolute; 
+      top: 8px; 
+      right: 8px; 
+      z-index: 10; 
+      display: none; 
+      align-items: center; 
+      gap: 4px; 
+      background: rgba(15, 15, 15, 0.85); 
+      backdrop-filter: blur(8px); 
+      -webkit-backdrop-filter: blur(8px); 
+      padding: 3px 6px; 
+      border-radius: 8px; 
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); 
+    }
+    .code-mode-only { display: none; }
   
   /* Modal */
   #modal-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
@@ -825,6 +839,9 @@
       body.mobile-mode #dlg-input { font-size: 12px; height: 30px; }
       body.mobile-mode #console-panel { height: 56px !important; }
             body.mobile-mode #console-logs { padding: 4px 8px; font-size: 10px; padding-right: 70px; }
+            body.mobile-mode #code-toolbar { top: 6px; right: 6px; max-width: calc(100% - 12px); overflow-x: auto; scrollbar-width: none; }
+            body.mobile-mode #code-toolbar::-webkit-scrollbar { display: none; }
+            body.mobile-mode #code-toolbar button.mini { height: 22px; padding: 0 6px; font-size: 9.5px; flex-shrink: 0; }
 
             /* Floating code action buttons in mobile mode - bottom right dock */
                   body.mobile-mode #code-toolbar {
@@ -937,14 +954,7 @@
                   </div>
                   <span id="current-file-label">No file open</span>
                   <div style="flex:1;"></div>
-                  <div id="code-toolbar">
-                    <button id="btn-find" class="mini" title="Find and Replace (Ctrl+F)">Find</button>
-                    <button id="btn-goto" class="mini" title="Go to Line (Ctrl+G)">Go to Line</button>
-                    <button id="btn-code-copy" class="mini" title="Copy code">Copy</button>
-                    <button id="btn-code-paste" class="mini" title="Paste clipboard text">Paste</button>
-                    <button id="btn-code-clear" class="mini danger" title="Clear code editor">Clear</button>
-                  </div>
-        <button id="btn-undo" class="icon-btn hist" disabled title="Undo (Ctrl+Z)"><svg class="ico" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span id="undo-count" class="cnt">0</span></button>
+                          <button id="btn-undo" class="icon-btn hist" disabled title="Undo (Ctrl+Z)"><svg class="ico" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span id="undo-count" class="cnt">0</span></button>
                 <button id="btn-redo" class="icon-btn hist" disabled title="Redo (Ctrl+Y)"><svg class="ico" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg><span id="redo-count" class="cnt">0</span></button>
                 <button id="btn-fullscreen" class="icon-btn" title="Fullscreen the preview and code area"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
                 <button id="btn-paste-ai" class="ai-btn" title="Apply an AI patch from the clipboard (Ctrl+Shift+V)"><svg class="ico" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Paste AI Fix</button>
@@ -956,7 +966,14 @@
             </div>
             <div id="view-container">
         <button id="btn-exit-full" class="mini" title="Exit fullscreen"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>Exit</button>
-                <div id="empty-watermark" class="watermark">Generate your app with AI,<br>copy the code, and click 'Paste AI Fix'</div>
+                <div id="code-toolbar">
+                  <button id="btn-find" class="mini" title="Find and Replace (Ctrl+F)">Find</button>
+                  <button id="btn-goto" class="mini" title="Go to Line (Ctrl+G)">Go to Line</button>
+                  <button id="btn-code-copy" class="mini" title="Copy code">Copy</button>
+                  <button id="btn-code-paste" class="mini" title="Paste clipboard text">Paste</button>
+                  <button id="btn-code-clear" class="mini danger" title="Clear code editor">Clear</button>
+                </div>
+                        <div id="empty-watermark" class="watermark">Generate your app with AI,<br>copy the code, and click 'Paste AI Fix'</div>
         <div id="monaco-container"></div>
         <textarea id="code-editor" spellcheck="false" wrap="off" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
         <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
