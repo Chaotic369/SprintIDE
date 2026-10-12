@@ -823,6 +823,7 @@
             </div>
       <button id="btn-new-repo" title="Create New Repository"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New</button>
       <button id="btn-live-site" title="Open the live GitHub Pages site in a new tab"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/></svg>Live Site</button>
+      <button id="btn-fullscreen-ide" class="icon-btn" title="Fullscreen Sprint IDE"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
     </div>
     <div class="header-group">
           <span id="user-display" title="GitHub user (signed in)"></span>
@@ -998,6 +999,7 @@
           btnCopyPrompt: document.getElementById('btn-copy-prompt'),
               aiInput: document.getElementById('ai-instruction'),
       btnLiveSite: document.getElementById('btn-live-site'),
+      btnFullIde: document.getElementById('btn-fullscreen-ide'),
       btnNewFile: document.getElementById('btn-new-file'),
       fileTree: document.getElementById('file-tree'),
           dirLabel: document.getElementById('dir-label'),
@@ -2021,6 +2023,22 @@
 
       function toggleFull() {
         if (isFull()) exitFull(); else enterFull();
+      }
+
+      function toggleIdeFull() {
+        if (!document.fullscreenElement) {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          }
+        }
+      }
+
+      if (ui.btnFullIde) {
+        ui.btnFullIde.addEventListener('click', toggleIdeFull);
       }
 
       ui.btnFull.addEventListener('click', toggleFull);
