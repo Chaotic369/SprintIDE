@@ -863,7 +863,21 @@
         body.mobile-mode button.mini { height: 20px; padding: 0 5px; font-size: 8.5px; border-radius: 4px; }
         body.mobile-mode button.icon-btn { height: 22px; padding: 0 6px; }
         body.mobile-mode .ico { width: 13px; height: 13px; }
-        body.mobile-mode button.icon-btn,
+        body.mobile-mode button,
+                body.mobile-mode button.primary,
+                body.mobile-mode button.ai-btn,
+                body.mobile-mode button.danger,
+                body.mobile-mode #btn-new-repo,
+                body.mobile-mode #btn-copy-prompt,
+                body.mobile-mode #btn-mobile-toggle,
+                body.mobile-mode #btn-mobile-toggle.active,
+                body.mobile-mode .dd-btn {
+                  background: #000000 !important;
+                  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+                  color: #ffffff !important;
+                  box-shadow: none !important;
+                }
+                body.mobile-mode button.icon-btn,
                 body.mobile-mode #btn-new-repo,
                 body.mobile-mode #btn-live-site,
                 body.mobile-mode #btn-logout,
@@ -927,7 +941,14 @@
                   border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
                   border-bottom: none !important;
                 }
-                body.mobile-mode #ai-instruction { height: 22px; font-size: 9.5px; padding: 0 8px; border-radius: 5px; }
+                body.mobile-mode #ai-instruction { 
+                          height: 22px; 
+                          font-size: 9.5px; 
+                          padding: 0 8px; 
+                          border-radius: 5px; 
+                          background: #000000 !important; 
+                          border: 1px solid rgba(255, 255, 255, 0.1) !important; 
+                        }
                 body.mobile-mode #editor-tabs { 
                           height: 28px; 
                           overflow-x: auto; 
