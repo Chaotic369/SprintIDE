@@ -112,6 +112,18 @@
               #btn-toggle-sidebar .i-expand { display: none; }
               #btn-toggle-sidebar.is-collapsed .i-collapse { display: none; }
               #btn-toggle-sidebar.is-collapsed .i-expand { display: inline; }
+                .side-actions { display: flex; gap: 3px; align-items: center; }
+                .side-actions button { padding: 2px 5px; }
+                #dir-bar { display: flex; align-items: center; gap: 5px; padding: 3px 8px; border-bottom: 1px solid var(--border); font-size: 10px; color: var(--text-muted); }
+                #dir-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--accent-blue); }
+                #dir-bar button.mini { padding: 1px 6px; }
+                .file-item.dir-item { color: #c9d1d9; }
+                .file-item.dir-item:hover { color: #fff; }
+                .file-item.cur-dir { border-left-color: var(--accent-blue); }
+                .dir-item .chev { width: 10px; height: 10px; color: var(--text-muted); transition: transform 0.12s; }
+                .dir-item.open .chev { transform: rotate(90deg); }
+                #file-tree.drop-over { outline: 1px dashed var(--accent-blue); outline-offset: -3px; background: rgba(92,157,255,0.06); }
+                .tree-empty { padding: 10px; color: var(--text-muted); font-size: 11px; }
         .ico { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
         .brand-tag .ico { color: var(--accent-blue); }
         .file-item .fi-icon { display: inline-flex; align-items: center; }
@@ -154,9 +166,19 @@
     <div id="sidebar">
       <div class="sidebar-header">
         <span>Explorer</span>
-        <button id="btn-new-file" class="mini" title="Create a new file in this repo"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>File</button>
+        <div class="side-actions">
+                  <button id="btn-new-file" class="mini" title="New file in the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v6M9 15h6"/></svg></button>
+                  <button id="btn-new-folder" class="mini" title="New folder in the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v6M9 14h6"/></svg></button>
+                  <button id="btn-upload" class="mini" title="Upload files to the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></button>
+                  <input id="file-upload" type="file" multiple hidden>
+                </div>
       </div>
-      <div id="file-tree"></div>
+      <div id="dir-bar" title="New files, folders and uploads go into this folder">
+              <svg class="ico" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              <span id="dir-label">repo root</span>
+              <button id="btn-dir-root" class="mini" title="Select the repo root folder">Root</button>
+            </div>
+            <div id="file-tree"></div>
     </div>
     
     <div id="resize-sidebar" class="resizer v" title="Drag to resize Explorer, double-click to reset"></div>
@@ -238,6 +260,8 @@
       let lastSnap = '';
       let typingTimer = null;
       const HIST_MAX = 100;
+        let currentDir = '';
+        const expandedDirs = new Set();
 
   // DOM Elements
   const ui = {
@@ -260,6 +284,11 @@
     btnLiveSite: document.getElementById('btn-live-site'),
     btnNewFile: document.getElementById('btn-new-file'),
     fileTree: document.getElementById('file-tree'),
+        dirLabel: document.getElementById('dir-label'),
+        btnDirRoot: document.getElementById('btn-dir-root'),
+        btnNewFolder: document.getElementById('btn-new-folder'),
+        btnUpload: document.getElementById('btn-upload'),
+        fileUpload: document.getElementById('file-upload'),
     tabPreview: document.getElementById('tab-preview'),
     tabCode: document.getElementById('tab-code'),
     codeEditor: document.getElementById('code-editor'),
@@ -479,6 +508,9 @@
     ui.codeEditor.value = '';
         histReset('');
     renderPreview('');
+        currentDir = '';
+        expandedDirs.clear();
+        updateDirLabel();
     ui.btnLiveSite.style.display = 'inline-flex';
     
     try {
@@ -507,32 +539,130 @@
       return map[ext] || DEFAULT_FILE_ICON;
     }
 
-    function renderFileTree() {
-      ui.fileTree.querySelectorAll('.file-item').forEach(el => { el.onclick = null; });
-      ui.fileTree.innerHTML = '';
-    fileTree.forEach(f => {
-      const div = document.createElement('div');
-      div.className = `file-item ${f.path === currentFile ? 'active' : ''}`;
-      const slash = f.path.lastIndexOf('/');
-            const ico = document.createElement('span');
-            ico.className = 'fi-icon';
-            ico.innerHTML = fileIcon(f.path);
-            const nm = document.createElement('span');
-            nm.className = 'fi-name';
-            nm.textContent = f.path.slice(slash + 1);
-            div.title = f.path;
-            div.appendChild(ico);
-            div.appendChild(nm);
-            if (slash !== -1) {
-              const dr = document.createElement('span');
-              dr.className = 'fi-dir';
-              dr.textContent = f.path.slice(0, slash + 1);
-              div.appendChild(dr);
+    const KEEP_NAME = '.gitkeep';
+      const ICON_FOLDER = '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>';
+      const ICON_CHEV = '<path d="m9 6 6 6-6 6"/>';
+      const BINARY_EXT = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'ico', 'bmp', 'pdf', 'zip', 'gz', 'tar', '7z', 'woff', 'woff2', 'ttf', 'otf', 'mp3', 'mp4', 'webm', 'mov', 'wav', 'ogg', 'exe'];
+
+      function joinPath(dir, name) {
+        return dir ? dir + '/' + name : name;
+      }
+
+      function dirOf(path) {
+        var i = path.lastIndexOf('/');
+        return i === -1 ? '' : path.slice(0, i);
+      }
+
+      function baseName(path) {
+        return path.slice(path.lastIndexOf('/') + 1);
+      }
+
+      function extOf(path) {
+        var base = baseName(path);
+        return base.indexOf('.') === -1 ? '' : base.split('.').pop().toLowerCase();
+      }
+
+      function dirLabel(dir) {
+        return dir ? dir + '/' : 'repo root';
+      }
+
+      function hasPath(path) {
+        return fileTree.some(function (f) { return f.path === path; });
+      }
+
+      function updateDirLabel() {
+        ui.dirLabel.textContent = dirLabel(currentDir);
+        ui.dirLabel.title = dirLabel(currentDir);
+      }
+
+      function expandParents(path) {
+        var parts = path.split('/');
+        for (var i = 1; i < parts.length; i++) {
+          expandedDirs.add(parts.slice(0, i).join('/'));
+        }
+      }
+
+      function toggleDir(path) {
+        if (expandedDirs.has(path)) expandedDirs.delete(path); else expandedDirs.add(path);
+        currentDir = path;
+        renderFileTree();
+      }
+
+      function openFromTree(path) {
+        if (BINARY_EXT.indexOf(extOf(path)) !== -1) {
+          currentDir = dirOf(path);
+          renderFileTree();
+          showToast("Binary file - it cannot be opened in the editor", true);
+          return;
+        }
+        loadFile(path);
+      }
+
+      function buildTree() {
+        var root = { name: '', path: '', dirs: Object.create(null), files: [] };
+        fileTree.forEach(function (f) {
+          var parts = f.path.split('/');
+          var node = root;
+          for (var i = 0; i < parts.length - 1; i++) {
+            var seg = parts[i];
+            if (!node.dirs[seg]) {
+              node.dirs[seg] = { name: seg, path: parts.slice(0, i + 1).join('/'), dirs: Object.create(null), files: [] };
             }
-      div.onclick = () => loadFile(f.path);
-      ui.fileTree.appendChild(div);
-    });
-  }
+            node = node.dirs[seg];
+          }
+          if (parts[parts.length - 1] !== KEEP_NAME) node.files.push(f);
+        });
+        return root;
+      }
+
+      function renderLevel(node, depth, parent) {
+        Object.keys(node.dirs).sort(function (a, b) {
+          return a.localeCompare(b);
+        }).forEach(function (key) {
+          var d = node.dirs[key];
+          var open = expandedDirs.has(d.path);
+          var row = document.createElement('div');
+          row.className = 'file-item dir-item' + (open ? ' open' : '') + (d.path === currentDir ? ' cur-dir' : '');
+          row.style.paddingLeft = (6 + depth * 12) + 'px';
+          row.title = d.path;
+          row.innerHTML = '<svg class="ico chev" viewBox="0 0 24 24">' + ICON_CHEV + '</svg>' + svgIcon(ICON_FOLDER, '#e3b341');
+          var nm = document.createElement('span');
+          nm.className = 'fi-name';
+          nm.textContent = d.name;
+          row.appendChild(nm);
+          row.onclick = function () { toggleDir(d.path); };
+          parent.appendChild(row);
+          if (open) renderLevel(d, depth + 1, parent);
+        });
+        node.files.slice().sort(function (a, b) {
+          return baseName(a.path).localeCompare(baseName(b.path));
+        }).forEach(function (f) {
+          var row = document.createElement('div');
+          row.className = 'file-item' + (f.path === currentFile ? ' active' : '');
+          row.style.paddingLeft = (22 + depth * 12) + 'px';
+          row.title = f.path;
+          var ico = document.createElement('span');
+          ico.className = 'fi-icon';
+          ico.innerHTML = fileIcon(f.path);
+          var nm = document.createElement('span');
+          nm.className = 'fi-name';
+          nm.textContent = baseName(f.path);
+          row.appendChild(ico);
+          row.appendChild(nm);
+          row.onclick = function () { openFromTree(f.path); };
+          parent.appendChild(row);
+        });
+      }
+
+      function renderFileTree() {
+        ui.fileTree.querySelectorAll('.file-item').forEach(el => { el.onclick = null; });
+        ui.fileTree.innerHTML = '';
+        updateDirLabel();
+        renderLevel(buildTree(), 0, ui.fileTree);
+        if (!fileTree.length) {
+          ui.fileTree.innerHTML = '<div class="tree-empty">No files in this repo yet.</div>';
+        }
+      }
 
   async function loadFile(path) {
     if(!currentRepo) return;
@@ -547,6 +677,8 @@
       sourceContent = base64ToUnicode(data.content);
             histReset(sourceContent);
       currentFile = path;
+            currentDir = dirOf(path);
+            expandParents(path);
             setDirty(false);
       ui.codeEditor.value = sourceContent;
       ui.btnPush.disabled = false;
@@ -657,11 +789,16 @@
         showToast("Select a repo first!", true);
         return;
       }
-      const entered = prompt("New file path (e.g., style.css or js/app.js):");
+      const entered = prompt("New file name in " + dirLabel(currentDir) + " (e.g., style.css):");
       if (!entered || !entered.trim()) return;
       let cleanPath = entered.trim();
       while (cleanPath.charAt(0) === '/') cleanPath = cleanPath.slice(1);
       if (!cleanPath) return;
+            cleanPath = joinPath(currentDir, cleanPath);
+            if (hasPath(cleanPath)) {
+              showToast("That file already exists", true);
+              return;
+            }
       const fileUrl = ['https:', '', 'api.github.com', 'repos', currentRepo, 'contents', cleanPath].join('/');
       try {
         log('Creating ' + cleanPath + '...');
@@ -865,7 +1002,174 @@
           ui.btnWrap.textContent = turnOn ? 'Wrap: on' : 'Wrap: off';
         });
 
-        // Resizable Panels
+        // Explorer Folders and Uploads
+          const UPLOAD_MAX = 25 * 1024 * 1024;
+
+          function contentsUrl(path) {
+            var enc = path.split('/').map(encodeURIComponent).join('/');
+            return ['https:', '', 'api.github.com', 'repos', currentRepo, 'contents', enc].join('/');
+          }
+
+          function authHeaders() {
+            return { Authorization: 'token ' + ghToken, 'Content-Type': 'application/json' };
+          }
+
+          async function getSha(path) {
+            var res = await fetch(contentsUrl(path) + '?ref=main', { headers: { Authorization: 'token ' + ghToken } });
+            if (res.status === 404) return '';
+            if (!res.ok) throw new Error(await res.text());
+            var data = await res.json();
+            return data.sha || '';
+          }
+
+          async function putFile(path, b64, message) {
+            var body = { message: message, content: b64, branch: 'main' };
+            if (hasPath(path)) {
+              var sha = await getSha(path);
+              if (sha) body.sha = sha;
+            }
+            var res = await fetch(contentsUrl(path), { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) });
+            if (!res.ok) throw new Error(await res.text());
+            return res.json();
+          }
+
+          function fileToBase64(file) {
+            return new Promise(function (resolve, reject) {
+              var reader = new FileReader();
+              reader.onload = function () {
+                resolve(String(reader.result).split(',')[1] || '');
+              };
+              reader.onerror = function () {
+                reject(new Error('Could not read ' + file.name));
+              };
+              reader.readAsDataURL(file);
+            });
+          }
+
+          async function uploadFiles(files) {
+            if (!currentRepo) {
+              showToast("Select a repo first!", true);
+              return;
+            }
+            if (!files.length) return;
+            var targetDir = currentDir;
+            var ok = 0;
+            var failed = 0;
+            var reloadCurrent = false;
+            ui.btnUpload.disabled = true;
+            try {
+              for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var path = joinPath(targetDir, file.name);
+                try {
+                  if (file.size > UPLOAD_MAX) throw new Error(file.name + ' is larger than 25 MB');
+                  var exists = hasPath(path);
+                  if (exists && !confirm('Overwrite ' + path + '?')) continue;
+                  log('Uploading ' + path + '...');
+                  var b64 = await fileToBase64(file);
+                  await putFile(path, b64, 'Upload ' + path + ' via Sprint IDE');
+                  if (!exists) fileTree.push({ path: path, type: 'blob' });
+                  if (path === currentFile) reloadCurrent = true;
+                  expandParents(path);
+                  ok++;
+                  log('Uploaded ' + path, 'success');
+                } catch (err) {
+                  failed++;
+                  log('Upload failed for ' + file.name + ': ' + err.message, 'err');
+                }
+              }
+            } finally {
+              ui.btnUpload.disabled = false;
+            }
+            renderFileTree();
+            if (reloadCurrent && currentFile) await loadFile(currentFile);
+            if (ok) {
+              showToast(ok + (ok === 1 ? ' file uploaded' : ' files uploaded') + (failed ? ', ' + failed + ' failed' : ''), failed > 0);
+            } else if (failed) {
+              showToast("Upload failed", true);
+            }
+          }
+
+          ui.btnUpload.addEventListener('click', function () {
+            if (!currentRepo) {
+              showToast("Select a repo first!", true);
+              return;
+            }
+            ui.fileUpload.click();
+          });
+
+          ui.fileUpload.addEventListener('change', function () {
+            var picked = Array.from(ui.fileUpload.files || []);
+            ui.fileUpload.value = '';
+            uploadFiles(picked).catch(function (err) {
+              log('Upload failed: ' + err.message, 'err');
+            });
+          });
+
+          ui.btnNewFolder.addEventListener('click', async () => {
+            if (!currentRepo) {
+              showToast("Select a repo first!", true);
+              return;
+            }
+            var entered = prompt("New folder name in " + dirLabel(currentDir) + ":");
+            if (!entered || !entered.trim()) return;
+            var name = entered.trim();
+            while (name.charAt(0) === '/') name = name.slice(1);
+            while (name.charAt(name.length - 1) === '/') name = name.slice(0, -1);
+            if (!name) return;
+            var folderPath = joinPath(currentDir, name);
+            var keepPath = joinPath(folderPath, KEEP_NAME);
+            var taken = fileTree.some(function (f) {
+              return f.path === folderPath || f.path.indexOf(folderPath + '/') === 0;
+            });
+            if (taken) {
+              showToast("That folder or file already exists", true);
+              return;
+            }
+            try {
+              log('Creating folder ' + folderPath + '...');
+              await putFile(keepPath, unicodeToBase64('\n'), 'Create folder ' + folderPath + ' via Sprint IDE');
+              fileTree.push({ path: keepPath, type: 'blob' });
+              expandParents(keepPath);
+              currentDir = folderPath;
+              renderFileTree();
+              showToast("Folder created!");
+              log('Created folder ' + folderPath, 'success');
+            } catch (err) {
+              log("Folder creation failed: " + err.message, 'err');
+              showToast("Error creating folder", true);
+            }
+          });
+
+          ui.btnDirRoot.addEventListener('click', function () {
+            currentDir = '';
+            renderFileTree();
+          });
+
+          ['dragenter', 'dragover'].forEach(function (ev) {
+            ui.fileTree.addEventListener(ev, function (e) {
+              var types = e.dataTransfer ? Array.from(e.dataTransfer.types || []) : [];
+              if (types.indexOf('Files') === -1) return;
+              e.preventDefault();
+              ui.fileTree.classList.add('drop-over');
+            });
+          });
+
+          ['dragleave', 'drop'].forEach(function (ev) {
+            ui.fileTree.addEventListener(ev, function () {
+              ui.fileTree.classList.remove('drop-over');
+            });
+          });
+
+          ui.fileTree.addEventListener('drop', function (e) {
+            if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+            e.preventDefault();
+            uploadFiles(Array.from(e.dataTransfer.files)).catch(function (err) {
+              log('Upload failed: ' + err.message, 'err');
+            });
+          });
+
+          // Resizable Panels
           const SIDEBAR_MIN = 120;
           const SIDEBAR_MAX = 480;
           const SIDEBAR_DEFAULT = 170;
