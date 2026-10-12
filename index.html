@@ -1444,7 +1444,11 @@
       <textarea id="new-repo-paste-content" placeholder="Paste full HTML here..." spellcheck="false" style="height:90px;padding:8px 10px;background:#1c1c1c;color:#ffffff;border:none;border-radius:10px;font-family:var(--font-ui);font-size:11.5px;resize:none;outline:none;"></textarea>
     </div>
     <div id="new-repo-file-box" style="display:none;flex-direction:column;gap:6px;">
-      <input type="file" id="new-repo-file-input" style="font-size:11.5px;color:var(--text-muted);">
+      <input type="file" id="new-repo-file-input" hidden>
+      <div id="new-repo-upload-zone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:90px;padding:12px;background:#1c1c1c;border-radius:10px;cursor:pointer;user-select:none;transition:background 0.15s ease;">
+        <svg id="new-repo-upload-ico" class="ico" viewBox="0 0 24 24" style="width:22px;height:22px;color:var(--accent-cyan);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+        <span id="new-repo-upload-label" style="font-size:11.5px;color:var(--text-muted);font-family:var(--font-ui);pointer-events:none;text-align:center;">Click to select file</span>
+      </div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
       <button type="button" id="new-repo-cancel">
@@ -2504,11 +2508,39 @@
     const newRepoPasteContent = document.getElementById('new-repo-paste-content');
     const newRepoFileBox = document.getElementById('new-repo-file-box');
     const newRepoFileInput = document.getElementById('new-repo-file-input');
+    const newRepoUploadZone = document.getElementById('new-repo-upload-zone');
+    const newRepoUploadIco = document.getElementById('new-repo-upload-ico');
+    const newRepoUploadLabel = document.getElementById('new-repo-upload-label');
     const newRepoCancelBtn = document.getElementById('new-repo-cancel');
     const newRepoSubmitBtn = document.getElementById('new-repo-submit');
     const newRepoOptBtns = document.querySelectorAll('.new-repo-opt');
     const newRepoPasteBtn = document.getElementById('btn-modal-paste-html');
     let newRepoMode = 'empty';
+
+    if (newRepoUploadZone) {
+      newRepoUploadZone.addEventListener('click', () => {
+        newRepoFileInput.click();
+      });
+      newRepoUploadZone.addEventListener('mouseenter', () => {
+        newRepoUploadZone.style.background = '#242424';
+      });
+      newRepoUploadZone.addEventListener('mouseleave', () => {
+        newRepoUploadZone.style.background = '#1c1c1c';
+      });
+    }
+
+    if (newRepoFileInput) {
+      newRepoFileInput.addEventListener('change', () => {
+        const file = newRepoFileInput.files && newRepoFileInput.files[0];
+        if (file) {
+          newRepoUploadLabel.textContent = file.name;
+          newRepoUploadLabel.style.color = '#ffffff';
+        } else {
+          newRepoUploadLabel.textContent = newRepoMode === 'upload-html' ? 'Click to select HTML file' : 'Click to select file';
+          newRepoUploadLabel.style.color = 'var(--text-muted)';
+        }
+      });
+    }
 
     if (newRepoPasteBtn) {
       newRepoPasteBtn.addEventListener('click', async () => {
@@ -2530,6 +2562,10 @@
       newRepoNameInput.value = '';
       newRepoPasteContent.value = '';
       newRepoFileInput.value = '';
+      if (newRepoUploadLabel) {
+        newRepoUploadLabel.textContent = 'Click to select file';
+        newRepoUploadLabel.style.color = 'var(--text-muted)';
+      }
       setNewRepoMode('empty');
       newRepoModal.style.display = 'flex';
       setTimeout(() => newRepoNameInput.focus(), 30);
@@ -2549,10 +2585,21 @@
       });
       newRepoPasteBox.style.display = mode === 'paste' ? 'flex' : 'none';
       newRepoFileBox.style.display = (mode === 'upload-html' || mode === 'upload-file') ? 'flex' : 'none';
+      const file = newRepoFileInput.files && newRepoFileInput.files[0];
       if (mode === 'upload-html') {
         newRepoFileInput.accept = '.html,.htm';
+        if (newRepoUploadIco) newRepoUploadIco.innerHTML = '<path d="m8 8-5 4 5 4"/><path d="m16 8 5 4-5 4"/><path d="M12 3v9"/><path d="m9 6 3-3 3 3"/>';
+        if (newRepoUploadLabel && !file) {
+          newRepoUploadLabel.textContent = 'Click to select HTML file';
+          newRepoUploadLabel.style.color = 'var(--text-muted)';
+        }
       } else {
         newRepoFileInput.removeAttribute('accept');
+        if (newRepoUploadIco) newRepoUploadIco.innerHTML = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>';
+        if (newRepoUploadLabel && !file) {
+          newRepoUploadLabel.textContent = 'Click to select file';
+          newRepoUploadLabel.style.color = 'var(--text-muted)';
+        }
       }
     }
 
