@@ -574,7 +574,7 @@ body.mobile-mode #sidebar.collapsed {
         .resizer:hover, .resizer.dragging { background: var(--accent-blue); box-shadow: none; }
 
           /* ===== Pure black large areas ===== */
-          body, #app-layout, #workspace, #main-area, #view-container, #sidebar, #file-tree, #ai-bar, #console-panel, #console-logs, #code-editor, #monaco-container, #media-viewer, .watermark { background: #000000; }
+          body, #app-layout, #workspace, #main-area, #view-container, #sidebar, #file-tree, #ai-bar, #console-panel, #console-logs, #code-editor, #code-wrapper, #line-numbers, #media-viewer, .watermark { background: #000000; }
           #ai-instruction, select { background: #111111; }
 
             /* ===== Curved / rounded overrides ===== */
@@ -2125,16 +2125,6 @@ body.mobile-mode #sidebar.collapsed {
           function isMediaFile(path) {
             const ext = extOf(path);
             return MEDIA_IMG_EXT.includes(ext) || MEDIA_AUDIO_EXT.includes(ext) || MEDIA_VIDEO_EXT.includes(ext);
-          }
-
-          function getMonacoLanguage(path) {
-            const ext = extOf(path);
-            if (ext === 'js' || ext === 'mjs') return 'javascript';
-            if (ext === 'html' || ext === 'htm') return 'html';
-            if (ext === 'css') return 'css';
-            if (ext === 'json') return 'json';
-            if (ext === 'md') return 'markdown';
-            return 'plaintext';
           }
 
           function setRepoProgress(pct) {
