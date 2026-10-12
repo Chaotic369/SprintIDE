@@ -739,9 +739,9 @@
                                           /* ===== Login background ===== */
                                           @keyframes loginFloatA { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(24px, 18px); } }
                                           @keyframes loginFloatB { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-20px, -24px); } }
-                                          #login-screen { overflow: hidden; background-color: #000000; background-image: radial-gradient(#262626 1px, transparent 1px); background-size: 26px 26px; }
-                                          #login-screen::before { content: ""; position: absolute; top: -140px; left: -140px; width: 420px; height: 420px; border-radius: 50%; border: 2px solid rgba(245, 158, 11, 0.16); pointer-events: none; animation: loginFloatA 12s ease-in-out infinite; }
-                                          #login-screen::after { content: ""; position: absolute; bottom: -180px; right: -140px; width: 520px; height: 520px; border-radius: 50%; border: 2px solid rgba(245, 158, 11, 0.1); box-shadow: inset 0 0 0 40px rgba(245, 158, 11, 0.03); pointer-events: none; animation: loginFloatB 15s ease-in-out infinite; }
+                                          #login-screen { overflow: hidden; background-color: #0a0a0a; background-image: repeating-linear-gradient(135deg, #111111 0, #111111 2px, transparent 2px, transparent 22px); }
+                                          #login-screen::before { content: ""; position: absolute; top: -90px; left: -90px; width: 360px; height: 360px; border-radius: 56px; background: #f59e0b; opacity: 0.12; transform: rotate(18deg); pointer-events: none; animation: loginFloatA 12s ease-in-out infinite; }
+                                          #login-screen::after { content: ""; position: absolute; bottom: -120px; right: -100px; width: 440px; height: 440px; border-radius: 72px; background: #1c1c1c; transform: rotate(-14deg); pointer-events: none; animation: loginFloatB 15s ease-in-out infinite; }
                                           .login-card { position: relative; z-index: 1; overflow: hidden; }
                                                         .login-card::before { content: ""; position: absolute; top: 0; left: 50%; width: 90px; height: 4px; margin-left: -45px; border-radius: 0 0 6px 6px; background: #f59e0b; }
 
