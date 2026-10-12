@@ -83,6 +83,9 @@
     .fi-icon { flex-shrink: 0; font-size: 11px; }
     .fi-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     .fi-dir { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: #5b6470; font-size: 9px; }
+      #ai-bar { display: flex; gap: 6px; align-items: center; padding: 4px 6px; background: var(--bg-panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+      #ai-instruction { flex: 1; min-width: 0; background: #0d1117; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; padding: 0 8px; height: 24px; font-size: 11px; outline: none; }
+      #ai-instruction:focus { border-color: var(--accent-blue); }
   </style>
 </head>
 <body>
@@ -128,11 +131,14 @@
                   </div>
                   <span id="current-file-label">No file open</span>
                   <div style="flex:1;"></div>
-        <button id="btn-copy-prompt" class="mini" title="Copy rules, scenarios, your instruction and the current file for the AI">📋 Copy Prompt</button>
-                <button id="btn-paste-ai" class="ai-btn" title="Apply an AI patch from the clipboard (Ctrl+Shift+V)">⚡ Paste AI Fix</button>
+        <button id="btn-paste-ai" class="ai-btn" title="Apply an AI patch from the clipboard (Ctrl+Shift+V)">⚡ Paste AI Fix</button>
       </div>
       
-      <div id="view-container">
+      <div id="ai-bar">
+              <input id="ai-instruction" type="text" placeholder="Describe the change you want, then press Enter or click Copy Prompt" autocomplete="off" spellcheck="false">
+              <button id="btn-copy-prompt" class="primary mini" title="Copy rules, scenarios, your instruction and the current file for the AI">📋 Copy Prompt</button>
+            </div>
+            <div id="view-container">
         <div id="empty-watermark" class="watermark">Generate your app with AI,<br>copy the code, and click 'Paste AI Fix'</div>
         <textarea id="code-editor" spellcheck="false" readonly></textarea>
         <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
@@ -190,6 +196,7 @@
     btnPush: document.getElementById('btn-push'),
     btnPasteAi: document.getElementById('btn-paste-ai'),
         btnCopyPrompt: document.getElementById('btn-copy-prompt'),
+            aiInput: document.getElementById('ai-instruction'),
     btnLiveSite: document.getElementById('btn-live-site'),
     btnNewFile: document.getElementById('btn-new-file'),
     fileTree: document.getElementById('file-tree'),
@@ -738,8 +745,12 @@
         showToast("Open a file first!", true);
         return;
       }
-      const wanted = prompt("What should the AI change? (describe the edit)");
-      if (wanted === null) return;
+      const wanted = ui.aiInput.value;
+          if (!wanted.trim()) {
+            showToast("Type what the AI should change in the bar first!", true);
+            ui.aiInput.focus();
+            return;
+          }
       const full = PROMPT_HEAD + '\n\n=== INSTRUCTIONS ===\n' + (wanted.trim() || '(none given)') + '\n\n=== CURRENT SOURCE ===\n' + sourceContent;
       navigator.clipboard.writeText(full).then(() => {
         showToast("Prompt + file copied for AI!");
@@ -749,7 +760,14 @@
       });
     });
 
-    ui.btnPasteAi.addEventListener('click', handlePaste);
+    ui.aiInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          ui.btnCopyPrompt.click();
+        }
+      });
+
+      ui.btnPasteAi.addEventListener('click', handlePaste);
 
   // Manual Paste Fallback
   document.addEventListener('keydown', (e) => {
