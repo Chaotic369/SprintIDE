@@ -831,8 +831,9 @@
               }
         body.mobile-mode .brand-tag, body.mobile-mode #user-display, body.mobile-mode #resize-sidebar, body.mobile-mode #resize-console, body.mobile-mode #editor-hint { display: none !important; }
                 body.mobile-mode #btn-fullscreen-ide { display: inline-flex !important; }
-        body.mobile-mode #header .header-group:first-of-type { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; gap: 3px; }
-        body.mobile-mode #header .header-group:last-of-type { flex-shrink: 0; gap: 3px; }
+        body.mobile-mode #header .header-group:first-of-type { flex: 0 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; gap: 2px; }
+                body.mobile-mode #header .header-group:last-of-type { flex-shrink: 0; gap: 2px; margin-left: auto; }
+                body.mobile-mode #header .header-group > * { margin: 0 !important; }
         body.mobile-mode #header .header-group::-webkit-scrollbar { display: none; }
         body.mobile-mode #header .header-group > * { flex-shrink: 0; }
         body.mobile-mode .dd-btn { min-width: 70px; max-width: 95px; height: 22px; padding: 0 6px; font-size: 9px; }
