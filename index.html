@@ -1859,7 +1859,7 @@
 
         function updateHistUI() {
             var pending = sourceContent !== lastSnap ? 1 : 0;
-            var u = undoStack.length + pending;
+            var u = undoStack.length + pending + (deletedFileUndoHistory ? 1 : 0);
             var r = pending ? 0 : redoStack.length;
             ui.undoCount.textContent = u;
             ui.redoCount.textContent = r;
@@ -1895,8 +1895,10 @@
                       lastSnap = text;
                       ui.codeEditor.value = text;
                       if (monacoEditor && monacoReady && monacoEditor.getValue() !== text) {
-                        monacoEditor.setValue(text);
-                      }
+                                              const viewState = monacoEditor.saveViewState();
+                                              monacoEditor.setValue(text);
+                                              if (viewState) monacoEditor.restoreViewState(viewState);
+                                            }
                       if (ui.tabPreview.classList.contains('active')) renderPreview(text); else previewStale = true;
                       if (currentFile) ui.btnPush.disabled = false;
                       setDirty(true);
@@ -1922,23 +1924,15 @@
                           showToast("Failed to restore deleted file", true);
                         }
                       }
-                      if (monacoEditor && monacoReady && ui.tabCode.classList.contains('active')) {
-                        monacoEditor.trigger('undo', 'undo', null);
-                        return;
-                      }
                       histCommit();
-                      if (!undoStack.length) return;
+                                            if (!undoStack.length) return;
                       redoStack.push(sourceContent);
                       applyHist(undoStack.pop());
                     }
 
                     function doRedo() {
-                                          if (monacoEditor && monacoReady && ui.tabCode.classList.contains('active')) {
-                                            monacoEditor.trigger('redo', 'redo', null);
-                                            return;
-                                          }
                                           histCommit();
-                                          if (!redoStack.length) return;
+                                                                                    if (!redoStack.length) return;
                                           undoStack.push(sourceContent);
                                           applyHist(redoStack.pop());
                                         }
@@ -2018,6 +2012,11 @@
                           minimap: { enabled: false }
                         });
                         monacoReady = true;
+                                                const KM = window.monaco.KeyMod;
+                                                const KC = window.monaco.KeyCode;
+                                                monacoEditor.addCommand(KM.CtrlCmd | KC.KeyZ, () => { doUndo().catch((err) => log(err.message, 'err')); });
+                                                monacoEditor.addCommand(KM.CtrlCmd | KC.KeyY, () => { doRedo(); });
+                                                monacoEditor.addCommand(KM.CtrlCmd | KM.Shift | KC.KeyZ, () => { doRedo(); });
                         monacoEditor.onDidChangeModelContent(() => {
                           sourceContent = monacoEditor.getValue();
                           ui.codeEditor.value = sourceContent;
