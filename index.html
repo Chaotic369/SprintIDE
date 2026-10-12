@@ -787,36 +787,44 @@
                                                                                     .lf-label { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); font-size: 9.5px; font-weight: 500; letter-spacing: 0.04em; color: #737373; white-space: nowrap; }
                                                                                     .lf-node.lf-hot .lf-label { color: #f59e0b; }
   /* ===== Mobile mode ===== */
-    #mobile-backdrop { display: none; position: fixed; inset: 0; z-index: 9050; background: rgba(0, 0, 0, 0.6); }
-    #btn-mobile-toggle { padding: 0 9px; }
-    #btn-mobile-toggle.active { background: #f59e0b; color: #1a1100; }
-    body.mobile-mode #mobile-backdrop.show { display: block; }
-    body.mobile-mode, body.mobile-mode #app-layout { height: 100vh; height: 100dvh; }
-    body.mobile-mode #header { height: 44px; margin: 6px; padding: 0 8px; gap: 6px; }
-    body.mobile-mode .brand-tag, body.mobile-mode #user-display, body.mobile-mode #btn-fullscreen-ide, body.mobile-mode #resize-sidebar, body.mobile-mode #resize-console, body.mobile-mode #editor-hint { display: none !important; }
-    body.mobile-mode #header .header-group:first-of-type { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
-    body.mobile-mode #header .header-group:last-of-type { flex-shrink: 0; gap: 6px; }
-    body.mobile-mode #header .header-group::-webkit-scrollbar { display: none; }
-    body.mobile-mode #header .header-group > * { flex-shrink: 0; }
-    body.mobile-mode .dd-btn { min-width: 100px; max-width: 130px; }
-    body.mobile-mode button { height: 34px; }
-    body.mobile-mode button.mini { height: 30px; }
-    body.mobile-mode #btn-new-repo, body.mobile-mode #btn-live-site, body.mobile-mode #btn-logout, body.mobile-mode button.ai-btn, body.mobile-mode #btn-copy-prompt, body.mobile-mode #console-header .console-actions button { font-size: 0; gap: 0; padding: 0 10px; }
-    body.mobile-mode #workspace { padding: 0 6px 6px; }
-    body.mobile-mode #main-area { border-radius: 12px; }
-    body.mobile-mode #sidebar { position: fixed; top: 0; bottom: 0; left: 0; width: 84vw !important; max-width: 320px; z-index: 9100; border-radius: 0 16px 16px 0; box-shadow: 0 0 40px rgba(0, 0, 0, 0.85); padding-top: env(safe-area-inset-top, 0px); }
-    body.mobile-mode .file-item { height: 36px; }
-    body.mobile-mode .item-actions { display: inline-flex; }
-    body.mobile-mode .item-btn { width: 30px; height: 30px; }
-    body.mobile-mode #editor-tabs { overflow-x: auto; scrollbar-width: none; gap: 6px; padding: 0 8px; }
-    body.mobile-mode #editor-tabs::-webkit-scrollbar { display: none; }
-    body.mobile-mode #editor-tabs > * { flex-shrink: 0; }
-    body.mobile-mode #editor-tabs #current-file-label { flex: 0 0 auto; max-width: 110px; }
-    body.mobile-mode #ai-bar { padding: 6px 8px; }
-    body.mobile-mode #ai-instruction { height: 34px; font-size: 16px; }
-    body.mobile-mode #dlg-input { font-size: 16px; }
-    body.mobile-mode #console-panel { height: 72px !important; }
-    body.mobile-mode #console-logs { padding-right: 90px; }
+      #mobile-backdrop { display: none; position: fixed; inset: 0; z-index: 9050; background: rgba(0, 0, 0, 0.6); }
+      #btn-mobile-toggle { padding: 0 8px; }
+      #btn-mobile-toggle.active { background: #f59e0b; color: #1a1100; }
+      body.mobile-mode #mobile-backdrop.show { display: block; }
+      body.mobile-mode, body.mobile-mode #app-layout { height: 100vh; height: 100dvh; }
+      body.mobile-mode #header { height: 34px; margin: 4px; padding: 0 6px; gap: 4px; border-radius: 10px; }
+      body.mobile-mode .brand-tag, body.mobile-mode #user-display, body.mobile-mode #btn-fullscreen-ide, body.mobile-mode #resize-sidebar, body.mobile-mode #resize-console, body.mobile-mode #editor-hint { display: none !important; }
+      body.mobile-mode #header .header-group:first-of-type { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; gap: 4px; }
+      body.mobile-mode #header .header-group:last-of-type { flex-shrink: 0; gap: 4px; }
+      body.mobile-mode #header .header-group::-webkit-scrollbar { display: none; }
+      body.mobile-mode #header .header-group > * { flex-shrink: 0; }
+      body.mobile-mode .dd-btn { min-width: 80px; max-width: 110px; height: 26px; padding: 0 8px; font-size: 10.5px; }
+      body.mobile-mode button { height: 26px; padding: 0 8px; font-size: 10.5px; border-radius: 6px; }
+      body.mobile-mode button.mini { height: 22px; padding: 0 6px; font-size: 10px; }
+      body.mobile-mode button.icon-btn { height: 26px; padding: 0 8px; }
+      body.mobile-mode #btn-new-repo, body.mobile-mode #btn-live-site, body.mobile-mode #btn-logout, body.mobile-mode button.ai-btn, body.mobile-mode #btn-copy-prompt, body.mobile-mode #console-header .console-actions button { font-size: 0; gap: 0; padding: 0 8px; height: 26px; }
+      body.mobile-mode #workspace { padding: 0 4px 4px; }
+      body.mobile-mode #main-area { border-radius: 10px; }
+      body.mobile-mode #sidebar { position: fixed; top: 0; bottom: 0; left: 0; width: 78vw !important; max-width: 250px; z-index: 9100; border-radius: 0 12px 12px 0; box-shadow: 0 0 30px rgba(0, 0, 0, 0.85); padding-top: env(safe-area-inset-top, 0px); }
+      body.mobile-mode .sidebar-header { height: 34px; padding: 0 6px; }
+      body.mobile-mode .side-actions { height: 26px; padding: 2px; gap: 2px; }
+      body.mobile-mode .side-actions button { height: 22px; padding: 0 6px; font-size: 9px; }
+      body.mobile-mode #dir-bar { height: 24px; margin: 4px 6px; padding: 0 4px 0 8px; font-size: 9.5px; }
+      body.mobile-mode #dir-bar button.mini { height: 18px; padding: 0 6px; font-size: 9px; }
+      body.mobile-mode .file-item { height: 26px; margin: 1px 4px; font-size: 11px; }
+      body.mobile-mode .item-actions { display: inline-flex; }
+      body.mobile-mode .item-btn { width: 20px; height: 20px; }
+      body.mobile-mode #editor-tabs { height: 32px; overflow-x: auto; scrollbar-width: none; gap: 4px; padding: 0 6px; }
+      body.mobile-mode #editor-tabs::-webkit-scrollbar { display: none; }
+      body.mobile-mode #editor-tabs > * { flex-shrink: 0; }
+      body.mobile-mode .tab-group { padding: 2px; }
+      body.mobile-mode .tab-btn { height: 24px; padding: 0 10px; font-size: 10.5px; }
+      body.mobile-mode #editor-tabs #current-file-label { flex: 0 0 auto; max-width: 90px; font-size: 10px; padding: 2px 8px; }
+      body.mobile-mode #ai-bar { padding: 4px 6px; gap: 6px; }
+      body.mobile-mode #ai-instruction { height: 26px; font-size: 11px; padding: 0 10px; }
+      body.mobile-mode #dlg-input { font-size: 12px; height: 30px; }
+      body.mobile-mode #console-panel { height: 56px !important; }
+      body.mobile-mode #console-logs { padding: 4px 8px; font-size: 10px; padding-right: 70px; }
     </style>
   </head>
 <body>
