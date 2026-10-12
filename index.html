@@ -1317,6 +1317,7 @@
               <div class="side-actions">
                         <button id="btn-new-file" class="mini" title="New file in the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v6M9 15h6"/></svg><span>File</span></button>
                         <button id="btn-new-folder" class="mini" title="New folder in the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v6M9 14h6"/></svg><span>Folder</span></button>
+                        <button id="btn-bulk-create" class="mini" title="Bulk create files and folders (e.g. one per line or paths with /)"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg><span>Bulk</span></button>
                         <button id="btn-upload" class="mini" title="Upload files to the selected folder"><svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg><span>Upload</span></button>
                         <input id="file-upload" type="file" multiple hidden>
                       </div>
@@ -1402,6 +1403,24 @@
     <div id="dlg-actions">
       <button type="button" id="dlg-cancel">Cancel</button>
       <button type="button" id="dlg-ok" class="primary">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="bulk-create-modal" style="position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);">
+  <div style="position:relative;width:90%;max-width:440px;padding:24px 22px 20px;background:#111111;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.85);display:flex;flex-direction:column;gap:12px;">
+    <div style="font-size:14.5px;font-weight:700;color:#ffffff;display:flex;align-items:center;gap:8px;">
+      <svg class="ico" viewBox="0 0 24 24" style="color:var(--accent-cyan);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>Bulk Create Files &amp; Folders</span>
+    </div>
+    <div id="bulk-modal-dest" style="font-size:11.5px;color:var(--text-sub);font-family:var(--font-code);"></div>
+    <textarea id="bulk-paths-input" placeholder="Enter paths, one per line or comma-separated&#10;e.g.&#10;components/Header.jsx&#10;styles/theme.css&#10;utils/&#10;assets/images/" spellcheck="false" style="height:140px;padding:10px 12px;background:#1c1c1c;color:#ffffff;border:none;border-radius:10px;font-family:var(--font-code);font-size:11.5px;line-height:1.45;resize:none;outline:none;"></textarea>
+    <div style="font-size:11px;color:var(--text-sub);line-height:1.4;">
+      Lines ending in <code style="color:var(--accent-cyan);">/</code> create empty folders (via .gitkeep). Paths without a trailing slash create empty files.
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+      <button type="button" id="btn-bulk-cancel">Cancel</button>
+      <button type="button" id="btn-bulk-submit" class="primary">Create All</button>
     </div>
   </div>
 </div>
@@ -1539,6 +1558,7 @@
       btnLiveSite: document.getElementById('btn-live-site'),
       btnFullIde: document.getElementById('btn-fullscreen-ide'),
       btnNewFile: document.getElementById('btn-new-file'),
+      btnBulkCreate: document.getElementById('btn-bulk-create'),
       fileTree: document.getElementById('file-tree'),
           dirLabel: document.getElementById('dir-label'),
           btnDirRoot: document.getElementById('btn-dir-root'),
@@ -3338,6 +3358,176 @@
           });
 
           ui.btnNewFolder.addEventListener('click', () => { startInlineEdit('folder', ''); });
+
+          const bulkModal = document.getElementById('bulk-create-modal');
+          const bulkPathsInput = document.getElementById('bulk-paths-input');
+          const bulkModalDest = document.getElementById('bulk-modal-dest');
+          const btnBulkCancel = document.getElementById('btn-bulk-cancel');
+          const btnBulkSubmit = document.getElementById('btn-bulk-submit');
+
+          function openBulkModal() {
+            if (!currentRepo) {
+              showToast("Select a repo first!", true);
+              return;
+            }
+            bulkPathsInput.value = '';
+            bulkModalDest.textContent = 'Destination: ' + dirLabel(currentDir);
+            bulkModal.style.display = 'flex';
+            setTimeout(() => bulkPathsInput.focus(), 30);
+          }
+
+          function closeBulkModal() {
+            bulkModal.style.display = 'none';
+          }
+
+          if (ui.btnBulkCreate) {
+            ui.btnBulkCreate.addEventListener('click', openBulkModal);
+          }
+
+          if (btnBulkCancel) {
+            btnBulkCancel.addEventListener('click', closeBulkModal);
+          }
+
+          if (bulkModal) {
+            bulkModal.addEventListener('mousedown', (e) => {
+              if (e.target === bulkModal) closeBulkModal();
+            });
+          }
+
+          if (btnBulkSubmit) {
+            btnBulkSubmit.addEventListener('click', async () => {
+              if (!currentRepo) return;
+              const raw = bulkPathsInput.value.trim();
+              if (!raw) {
+                showToast("Please enter at least one file or folder path", true);
+                bulkPathsInput.focus();
+                return;
+              }
+
+              const lines = raw.split(/[\r\n,]+/)
+                .map(s => s.trim())
+                .filter(Boolean);
+
+              if (!lines.length) {
+                showToast("No valid paths found", true);
+                return;
+              }
+
+              const itemsToCreate = [];
+              const seen = new Set();
+
+              for (let line of lines) {
+                const isDir = line.endsWith('/');
+                let clean = line.replace(/^\/+/, '').replace(/\/+$/, '');
+                if (!clean) continue;
+                clean = joinPath(currentDir, clean);
+
+                const finalPath = isDir ? joinPath(clean, KEEP_NAME) : clean;
+                if (!seen.has(finalPath)) {
+                  seen.add(finalPath);
+                  itemsToCreate.push({ path: finalPath, isDir: isDir, orig: line });
+                }
+              }
+
+              if (!itemsToCreate.length) {
+                showToast("No valid paths to create", true);
+                return;
+              }
+
+              closeBulkModal();
+              btnBulkSubmit.disabled = true;
+
+              try {
+                log(`Bulk creating ${itemsToCreate.length} item(s)...`);
+                setRepoProgress(15);
+                const treeEntries = [];
+
+                for (let i = 0; i < itemsToCreate.length; i++) {
+                  const it = itemsToCreate[i];
+                  const b64 = unicodeToBase64(it.isDir ? '\n' : '');
+                  const blobRes = await fetch(`https://api.github.com/repos/${currentRepo}/git/blobs`, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ content: b64, encoding: 'base64' })
+                  });
+                  if (!blobRes.ok) throw new Error(await blobRes.text());
+                  const blobData = await blobRes.json();
+                  treeEntries.push({
+                    path: it.path,
+                    mode: '100644',
+                    type: 'blob',
+                    sha: blobData.sha
+                  });
+                  setRepoProgress(15 + Math.round(((i + 1) / itemsToCreate.length) * 45));
+                }
+
+                log('Creating tree with new files...');
+                const refRes = await fetch(`https://api.github.com/repos/${currentRepo}/git/refs/heads/main`, {
+                  headers: { Authorization: `token ${ghToken}` }
+                });
+                if (!refRes.ok) throw new Error(await refRes.text());
+                const refData = await refRes.json();
+                const parentCommitSha = refData.object.sha;
+
+                const commitFetchRes = await fetch(`https://api.github.com/repos/${currentRepo}/git/commits/${parentCommitSha}`, {
+                  headers: { Authorization: `token ${ghToken}` }
+                });
+                if (!commitFetchRes.ok) throw new Error(await commitFetchRes.text());
+                const commitInfo = await commitFetchRes.json();
+                const baseTreeSha = commitInfo.tree.sha;
+
+                const treeRes = await fetch(`https://api.github.com/repos/${currentRepo}/git/trees`, {
+                  method: 'POST',
+                  headers: authHeaders(),
+                  body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries })
+                });
+                if (!treeRes.ok) throw new Error(await treeRes.text());
+                const treeData = await treeRes.json();
+                setRepoProgress(75);
+
+                log('Committing bulk changes...');
+                const commitBody = {
+                  message: `Bulk create ${itemsToCreate.length} item(s) via Sprint IDE`,
+                  tree: treeData.sha,
+                  parents: [parentCommitSha]
+                };
+                const commitRes = await fetch(`https://api.github.com/repos/${currentRepo}/git/commits`, {
+                  method: 'POST',
+                  headers: authHeaders(),
+                  body: JSON.stringify(commitBody)
+                });
+                if (!commitRes.ok) throw new Error(await commitRes.text());
+                const commitData = await commitRes.json();
+                setRepoProgress(90);
+
+                const updateRefRes = await fetch(`https://api.github.com/repos/${currentRepo}/git/refs/heads/main`, {
+                  method: 'PATCH',
+                  headers: authHeaders(),
+                  body: JSON.stringify({ sha: commitData.sha })
+                });
+                if (!updateRefRes.ok) throw new Error(await updateRefRes.text());
+                setRepoProgress(100);
+
+                itemsToCreate.forEach(it => {
+                  if (!hasPath(it.path)) {
+                    fileTree.push({ path: it.path, type: 'blob' });
+                  }
+                  expandParents(it.path);
+                });
+                fileTree.sort((a, b) => a.path.localeCompare(b.path));
+                renderFileTree();
+
+                showToast(`Created ${itemsToCreate.length} item(s) successfully!`);
+                log(`Bulk created ${itemsToCreate.length} files/folders.`, 'success');
+              } catch (err) {
+                setRepoProgress(100);
+                log('Bulk creation failed: ' + err.message, 'err');
+                showToast("Bulk creation failed", true);
+              } finally {
+                btnBulkSubmit.disabled = false;
+              }
+            });
+          }
 
                     async function createFolder(entered) {
             if (!currentRepo) {
