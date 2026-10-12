@@ -544,6 +544,7 @@
                   .dd.open .dd-btn .ico { transform: rotate(180deg); color: #f59e0b; }
                   .dd-menu { display: none; position: absolute; top: calc(100% + 6px); left: 0; min-width: 100%; width: max-content; max-width: 300px; max-height: 280px; overflow-y: auto; padding: 4px; background: #111111; border-radius: 12px; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.75); z-index: 200; }
                   .dd.open .dd-menu { display: block; }
+                    .dd-menu { position: fixed; top: 0; left: 0; z-index: 10002; min-width: 160px; }
                   .dd-item { position: relative; padding: 7px 28px 7px 10px; border-radius: 8px; font-size: 11.5px; color: var(--text-muted); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background 0.12s ease, color 0.12s ease; }
                   .dd-item:hover { background: #1c1c1c; color: #fff; }
                   .dd-item.selected { background: #1c1c1c; color: #fff; }
@@ -1009,9 +1010,21 @@
       new MutationObserver(sync).observe(sel, { childList: true });
 
       btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        wrap.classList.toggle('open');
-      });
+            e.preventDefault();
+            e.stopPropagation();
+            const willOpen = !wrap.classList.contains('open');
+            if (willOpen) {
+              sync();
+              const r = btn.getBoundingClientRect();
+              menu.style.top = (r.bottom + 6) + 'px';
+              menu.style.left = r.left + 'px';
+              menu.style.minWidth = Math.max(160, r.width) + 'px';
+              wrap.classList.add('open');
+            } else {
+              closeMenu();
+            }
+          });
+          window.addEventListener('resize', closeMenu);
       document.addEventListener('click', (e) => {
         if (!wrap.contains(e.target)) closeMenu();
       });
