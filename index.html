@@ -826,26 +826,27 @@
       body.mobile-mode #console-panel { height: 56px !important; }
             body.mobile-mode #console-logs { padding: 4px 8px; font-size: 10px; padding-right: 70px; }
 
-            /* Floating code action buttons in mobile mode */
-            body.mobile-mode #code-toolbar {
-              position: absolute;
-              top: 38px;
-              right: 8px;
-              z-index: 10;
-              display: none;
-              flex-wrap: wrap;
-              justify-content: flex-end;
-              gap: 4px;
-              max-width: calc(100vw - 20px);
-              background: rgba(17, 17, 17, 0.85);
-              backdrop-filter: blur(8px);
-              -webkit-backdrop-filter: blur(8px);
-              padding: 4px 6px;
-              border-radius: 8px;
-              border: 1px solid rgba(255, 255, 255, 0.08);
-              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-              pointer-events: auto;
-            }
+            /* Floating code action buttons in mobile mode - bottom right dock */
+                  body.mobile-mode #code-toolbar {
+                    position: absolute;
+                    bottom: 12px;
+                    right: 10px;
+                    top: auto;
+                    z-index: 15;
+                    display: none;
+                    flex-wrap: wrap;
+                    justify-content: flex-end;
+                    gap: 4px;
+                    max-width: calc(100vw - 24px);
+                    background: rgba(20, 20, 20, 0.88);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    padding: 4px 6px;
+                    border-radius: 8px;
+                    border: 1px solid rgba(255, 255, 255, 0.12);
+                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75);
+                    pointer-events: auto;
+                  }
             body.mobile-mode #main-area:has(#tab-code.active) #code-toolbar,
             body.mobile-mode.is-code-view #code-toolbar {
               display: flex !important;
