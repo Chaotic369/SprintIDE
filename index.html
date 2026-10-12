@@ -824,7 +824,42 @@
       body.mobile-mode #ai-instruction { height: 26px; font-size: 11px; padding: 0 10px; }
       body.mobile-mode #dlg-input { font-size: 12px; height: 30px; }
       body.mobile-mode #console-panel { height: 56px !important; }
-      body.mobile-mode #console-logs { padding: 4px 8px; font-size: 10px; padding-right: 70px; }
+            body.mobile-mode #console-logs { padding: 4px 8px; font-size: 10px; padding-right: 70px; }
+
+            /* Floating code action buttons in mobile mode */
+            body.mobile-mode #code-toolbar {
+              position: absolute;
+              top: 38px;
+              right: 8px;
+              z-index: 10;
+              display: none;
+              flex-wrap: wrap;
+              justify-content: flex-end;
+              gap: 4px;
+              max-width: calc(100vw - 20px);
+              background: rgba(17, 17, 17, 0.85);
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
+              padding: 4px 6px;
+              border-radius: 8px;
+              border: 1px solid rgba(255, 255, 255, 0.08);
+              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+              pointer-events: auto;
+            }
+            body.mobile-mode #main-area:has(#tab-code.active) #code-toolbar,
+            body.mobile-mode.is-code-view #code-toolbar {
+              display: flex !important;
+            }
+            body.mobile-mode #code-toolbar button.mini {
+              height: 22px;
+              padding: 0 6px;
+              font-size: 9.5px;
+              background: #222222;
+              border: 1px solid rgba(255, 255, 255, 0.06);
+            }
+            body.mobile-mode #code-toolbar button.mini:hover {
+              background: #2f2f2f;
+            }
     </style>
   </head>
 <body>
@@ -2679,9 +2714,10 @@
 
           // View Toggles
             ui.tabPreview.addEventListener('click', () => {
-              ui.tabPreview.classList.add('active');
-              ui.editorStatus.style.display = 'none';
-              ui.codeToolbar.style.display = 'none';
+                          ui.tabPreview.classList.add('active');
+                          document.body.classList.remove('is-code-view');
+                          ui.editorStatus.style.display = 'none';
+                          ui.codeToolbar.style.display = 'none';
               if (previewStale) renderPreview(sourceContent);
               ui.tabCode.classList.remove('active');
               ui.previewFrame.style.display = 'block';
@@ -2691,11 +2727,12 @@
             });
 
             ui.tabCode.addEventListener('click', () => {
-              ui.tabCode.classList.add('active');
-              ui.tabPreview.classList.remove('active');
-              ui.previewFrame.style.display = 'none';
-              ui.mediaViewer.style.display = 'none';
-              ui.codeToolbar.style.display = 'inline-flex';
+                          ui.tabCode.classList.add('active');
+                          document.body.classList.add('is-code-view');
+                          ui.tabPreview.classList.remove('active');
+                          ui.previewFrame.style.display = 'none';
+                          ui.mediaViewer.style.display = 'none';
+                          ui.codeToolbar.style.display = 'inline-flex';
               initMonaco();
               if (monacoReady && monacoEditor) {
                 ui.monacoContainer.style.display = 'block';
