@@ -438,19 +438,8 @@
   #btn-exit-full { display: none; position: absolute; top: 10px; right: 10px; z-index: 5; opacity: 0.9; }
   #btn-exit-full:hover { opacity: 1; }
   #view-container:fullscreen { background: var(--bg-dark); }
-          #view-container.pseudo-full { position: fixed; inset: 0; z-index: 9000; background: var(--bg-dark); }
-          #view-container:fullscreen #btn-exit-full, #view-container.pseudo-full #btn-exit-full { display: inline-flex; }
-
-          html.ide-pseudo-fullscreen, html.ide-pseudo-fullscreen body {
-            position: fixed !important;
-            inset: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            height: 100dvh !important;
-            z-index: 99999 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
+  #view-container.pseudo-full { position: fixed; inset: 0; z-index: 9000; background: var(--bg-dark); }
+  #view-container:fullscreen #btn-exit-full, #view-container.pseudo-full #btn-exit-full { display: inline-flex; }
 
     /* ===== Sleek IDE theme overrides ===== */
     ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -2505,83 +2494,27 @@
         if (isFull()) exitFull(); else enterFull();
       }
 
-      async function toggleIdeFull() {
-              const doc = document;
-              const elem = doc.documentElement;
-              const isNativeFull = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
-              const isPseudoFull = elem.classList.contains('ide-pseudo-fullscreen');
+      function toggleIdeFull() {
+        const doc = document;
+        const elem = doc.documentElement;
+        if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
+          if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(() => {});
+          } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+          }
+        } else {
+          if (doc.exitFullscreen) {
+            doc.exitFullscreen().catch(() => {});
+          } else if (doc.webkitExitFullscreen) {
+            doc.webkitExitFullscreen();
+          }
+        }
+      }
 
-              if (isNativeFull || isPseudoFull) {
-                elem.classList.remove('ide-pseudo-fullscreen');
-                if (isNativeFull) {
-                  try {
-                    if (doc.exitFullscreen) await doc.exitFullscreen();
-                    else if (doc.webkitExitFullscreen) await doc.webkitExitFullscreen();
-                  } catch (err) {}
-                }
-                showToast("Exited IDE fullscreen");
-                return;
-              }
-
-              let entered = false;
-              try {
-                if (elem.requestFullscreen) {
-                  await elem.requestFullscreen();
-                  entered = true;
-                } else if (elem.webkitRequestFullscreen) {
-                  await elem.webkitRequestFullscreen();
-                  entered = true;
-                }
-              } catch (err) {
-                // Native fullscreen often blocked or unsupported on mobile webkit/browser frames
-              }
-
-              if (!entered) {
-                elem.classList.add('ide-pseudo-fullscreen');
-              }
-              showToast("IDE fullscreen enabled");
-            }
-
-            const ideFullBtn = document.getElementById('btn-fullscreen-ide');
-            if (ideFullBtn) {
-              ideFullBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                toggleIdeFull();
-              });
-            } else if (elem.webkitRequestFullscreen) {
-                    await elem.webkitRequestFullscreen();
-                  } else if (elem.mozRequestFullScreen) {
-                    await elem.mozRequestFullScreen();
-                  } else if (elem.msRequestFullscreen) {
-                    await elem.msRequestFullscreen();
-                  }
-                } catch (err) {
-                  log('Fullscreen error: ' + err.message, 'err');
-                }
-              } else {
-                try {
-                  if (doc.exitFullscreen) {
-                    await doc.exitFullscreen();
-                  } else if (doc.webkitExitFullscreen) {
-                    await doc.webkitExitFullscreen();
-                  } else if (doc.mozCancelFullScreen) {
-                    await doc.mozCancelFullScreen();
-                  } else if (doc.msExitFullscreen) {
-                    await doc.msExitFullscreen();
-                  }
-                } catch (err) {
-                  log('Exit fullscreen error: ' + err.message, 'err');
-                }
-              }
-            }
-
-            const ideFullBtn = document.getElementById('btn-fullscreen-ide');
-            if (ideFullBtn) {
-              ideFullBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                toggleIdeFull();
-              });
-            }
+      if (ui.btnFullIde) {
+        ui.btnFullIde.addEventListener('click', toggleIdeFull);
+      }
 
       ui.btnFull.addEventListener('click', toggleFull);
       ui.btnExitFull.addEventListener('click', exitFull);
